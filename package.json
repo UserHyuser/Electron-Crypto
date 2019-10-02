@@ -1,0 +1,25 @@
+{
+  "name": "Electron crypto",
+  "version": "0.7",
+  "description": "Realization of crypto protocols on Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "Nikita",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^6.0.9"
+  },
+  "dependencies": {
+    "big-integer": "^1.6.45"
+  }
+}
