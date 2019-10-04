@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, Menu,ipcMain} = require('electron')
 const path = require('path')
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -7,6 +7,7 @@ const path = require('path')
 let mainWindow;
 let lab1Window;
 let lab2Window;
+let labDiffiHellman;
 
 function createWindow () {
   // Create the browser window.
@@ -17,7 +18,7 @@ function createWindow () {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true
     }
-  })
+  });
 
   const createlab1Window = () =>{
     lab1Window= new BrowserWindow({
@@ -28,7 +29,7 @@ function createWindow () {
       webPreferences: {
         nodeIntegration: true
       }
-    })
+    });
     lab1Window.loadFile('Lab1.html');
     lab1Window.on('close',function () {
       lab1Window = 'null';
@@ -47,7 +48,24 @@ function createWindow () {
     lab2Window.loadFile('Lab2.html');
     lab2Window.on('close',function () {
       lab2Window = 'null';
+    });
+  };
+  const createlabDiffiHellman = () =>{
+    labDiffiHellman= new BrowserWindow({
+      width: 1000,
+      height: 600,
+      title: 'Алгоритм Диффи-Хеллмана',
+      webPreferences: {
+        nodeIntegration: true
+      }
+    });
+    labDiffiHellman.loadFile('./pages/LabDiffiHellman.html');
+    labDiffiHellman.on('close',function () {
+      labDiffiHellman = 'null';
     })
+    ipcMain.on('labDiffiHellman', function () {
+      createlabDiffiHellman();
+    });
   };
 
   ipcMain.on('lab1Open', function () {
@@ -56,9 +74,13 @@ function createWindow () {
   ipcMain.on('lab2Open', function () {
     createlab2Window();
   });
+  ipcMain.on('labDiffiHellmanOpen', function () {
+    createlabDiffiHellman();
+  });
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  mainWindow.loadFile('index.html');
+  // Menu.setApplicationMenu(null);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -68,7 +90,8 @@ function createWindow () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    mainWindow = null
+    mainWindow = null;
+    app.quit();
   })
 }
 

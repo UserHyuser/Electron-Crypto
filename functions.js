@@ -173,7 +173,9 @@ function bigNumbersGenerate(keysize, P, Q) {
     if (!isNaN(parseInt(keysize))){
         do {
             p = randomPrime(keysize / 2);
+            console.log(p);
             q = randomPrime(keysize / 2);
+            console.log(q);
             totient = bigInt.lcm(               //Наименьшее общее кратное
                 p.prev(), // -1
                 q.prev()
@@ -201,9 +203,125 @@ function randomPrime(bits) {
 
     while (true) {
         let p = bigInt.randBetween(min, max);
+        // console.log(p);
         if (p.isProbablePrime(32)) {
             return p;
         }
     }
 }
 
+function getPrimeNumbers(deg) { // указывается степень
+    const min = BigInt(10n ** (BigInt(deg)-2n));
+    const max = BigInt(10n ** (BigInt(deg)));
+    let q,p;
+    while (true) {
+        q = bigInt.randBetween(min, max);
+        if (SolovayStrassenTest(q.toString(),128)) {
+            p = bigInt(2n*BigInt(q) + 1n);
+            if (SolovayStrassenTest(p.toString(),128)){ // Почему-то нужно передавать как строку BigInt не работает
+                return {p, q}
+            }
+        }
+    }
+}
+
+// Якобиан
+function calculateJacobian(a, n) {
+    if (!a)
+        return 0;// (0/n) = 0
+    let  ans = 1;
+    if (a < 0n)
+    {
+        a = -a; // (a/n) = (-a/n)*(-1/n)
+        if (n % 4n === 3n)
+            ans = -ans; // (-1/n) = -1 if n = 3 (mod 4)
+    }
+
+    if (a === 1n)
+        return ans;// (1/n) = 1
+
+    while (a)
+    {
+        if (a < 0n)
+        {
+            a = -a;// (a/n) = (-a/n)*(-1/n)
+            if (n % 4n === 3n)
+                ans = -ans;// (-1/n) = -1 if n = 3 (mod 4)
+        }
+        while (a % 2n === 0n)
+        {
+            a = a / 2n;
+            if (n % 8n === 3n || n % 8n === 5n)
+                ans = -ans;
+
+        }
+        [a,n] = [n,a]; // swap
+        if (a % 4n === 3n && n % 4n === 3n)
+            ans = -ans;
+        a = a % n;
+        if (a > n / 2n)
+            a = a - n;
+    }
+    if (n === 1n)
+        return ans;
+    return 0;
+}
+// Тест на простоту Соловея - Штрассена (псевдопростое или точно составное)
+
+/**
+ * @return {boolean}
+ */
+function SolovayStrassenTest(p, iterations) {
+    p = BigInt(p);
+    if (p < 2n)
+        return false;
+    if (p !== 2n && p % 2n === 0n)
+        return false;
+
+    for (let i = 0; i < iterations; i++)
+    {
+        // Generate a random number a
+        let a = BigInt(bigInt.randBetween(1, 999999999)) % ((p - 1n) + 1n);
+        let jacobian = (p + BigInt(calculateJacobian(a, p))) % p;
+        let mod = fastDegreeModule(a, (p - 1n) / 2n, p);
+
+        if (!jacobian || mod !== jacobian)
+            return false;
+    }
+    return true;
+}
+
+function DiffiHellman(P,Q, size){
+    let p,q;
+    if (SolovayStrassenTest(BigInt(P),128) && SolovayStrassenTest(BigInt(Q),128)){
+        p = BigInt(P); q = BigInt(Q);
+    } else {
+        let numbers = getPrimeNumbers(size);
+        // Find g
+        q = BigInt(numbers.q); p = BigInt(numbers.p);
+    }
+    let g = 5n;
+    while( fastDegreeModule(g,q,p) === 1n){
+        g = BigInt(bigInt.randBetween(1, (p-1n).toString()))
+    }
+
+    // first client
+    let Xa = bigInt.randBetween((p/2n).toString(), (p-1n).toString())
+    let Ya = fastDegreeModule(g,Xa, p);
+
+    // second
+    let Xb = bigInt.randBetween((p/2n).toString(), (p-1n).toString())
+    let Yb = fastDegreeModule(g,Xb, p);
+
+    // Connection
+    let Zab = fastDegreeModule(Yb,Xa, p);
+    let Zba = fastDegreeModule(Ya,Xb, p);
+
+    console.table({q, p, g, Xa, Ya, Xb, Yb, Zab, Zba})
+    return {q, p, g, Xa, Ya, Xb, Yb, Zab, Zba}
+}
+
+
+
+
+module.exports = cryptFunctions;

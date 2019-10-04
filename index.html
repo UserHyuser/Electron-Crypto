@@ -7,8 +7,14 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="./materialize/css/materialize.min.css"  media="screen,projection"/>
+    <link rel = "stylesheet" href = "./animated-bg/style.css">
+    <script src="./animated-bg/particles.js"></script>
+    <script src="./animated-bg/app.js"></script>
   </head>
-  <body class="container">
+  <body>
+  <div id="particles-js"></div>
+    <div class="container">
+      <br>
     <h3 class="header">Криптографические методы защиты информации</h3>
     <div class="black-text">
       <h6 >Выберите нужную программу:</h6>
@@ -17,7 +23,12 @@
     <button class="btn waves-effect waves-light" onclick="lab1Button()">Базовые алгоритмы теории чисел</button>
     <br><br>
     <button class="btn waves-effect waves-light" onclick="lab2Button()">RSA шифрование</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="labDiffiHellmanButton()">Алгоритм Диффи-Хеллмана</button>
+    </div>
 
+
+  </div>
     <!-- You can also require other files to run in this process -->
     <script src="./renderer.js"></script>
     <script type="text/javascript" src="./materialze/js/materialize.min.js"></script>
@@ -30,6 +41,9 @@
     }
     function lab2Button() {
       ipcRenderer.send('lab2Open');
+    }
+    function labDiffiHellmanButton(){
+      ipcRenderer.send('labDiffiHellmanOpen');
     }
   </script>
 
