@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>КМЗИ</title>
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--Import materialize.css-->
-    <link type="text/css" rel="stylesheet" href="./materialize/css/materialize.min.css"  media="screen,projection"/>
-    <link rel = "stylesheet" href = "./animated-bg/style.css">
+    <link type="text/css" rel="stylesheet" href="./materialize/css/materialize.min.css" media="screen,projection"/>
+    <link rel="stylesheet" href="./animated-bg/style.css">
     <script src="./animated-bg/particles.js"></script>
     <script src="./animated-bg/app.js"></script>
-  </head>
-  <body>
-  <div id="particles-js"></div>
-    <div class="container">
-      <br>
+</head>
+<body>
+<div id="particles-js"></div>
+<div class="container">
+    <br>
     <h4 class="header">Криптографические методы защиты информации</h4>
     <div class="black-text">
-      <h6 >Выберите нужную программу:</h6>
+        <h6>Выберите нужную программу:</h6>
     </div>
     <br>
     <button class="btn waves-effect waves-light" onclick="lab1Button()">Базовые алгоритмы теории чисел</button>
@@ -25,27 +25,39 @@
     <button class="btn waves-effect waves-light" onclick="lab2Button()">RSA шифрование</button>
     <br><br>
     <button class="btn waves-effect waves-light" onclick="labDiffiHellmanButton()">Алгоритм Диффи-Хеллмана</button>
-    </div>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="labShamirButton()">Шифр Шамира</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="labAlGamalButton()">Шифр Эль-Гамаля</button>
+</div>
 
 
-  </div>
-    <!-- You can also require other files to run in this process -->
-    <script src="./renderer.js"></script>
-    <script type="text/javascript" src="./materialze/js/materialize.min.js"></script>
-  <script>
+</div>
+<!-- You can also require other files to run in this process -->
+<script src="./renderer.js"></script>
+<script type="text/javascript" src="./materialze/js/materialize.min.js"></script>
+<script>
     const electron = require('electron');
     const {ipcRenderer} = electron; // This can send text to main.js (some type socket.io)
 
     function lab1Button() {
-      ipcRenderer.send('lab1Open');
+        ipcRenderer.send('lab1Open');
     }
-    function lab2Button() {
-      ipcRenderer.send('lab2Open');
-    }
-    function labDiffiHellmanButton(){
-      ipcRenderer.send('labDiffiHellmanOpen');
-    }
-  </script>
 
-  </body>
+    function lab2Button() {
+        ipcRenderer.send('lab2Open');
+    }
+
+    function labDiffiHellmanButton() {
+        ipcRenderer.send('labDiffiHellmanOpen');
+    }
+    function labShamirButton() {
+        ipcRenderer.send('labShamirOpen');
+    }
+    function labAlGamalButton() {
+        ipcRenderer.send('labAlGamalOpen');
+    }
+</script>
+
+</body>
 </html>

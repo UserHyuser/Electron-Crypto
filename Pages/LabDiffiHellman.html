@@ -30,24 +30,25 @@
     const electron = require('electron');
     const {ipcRenderer} = electron;
 
+    let inputP = document.getElementById("inputP");
+    let inputQ = document.getElementById("inputQ");
+    let inputSize = document.getElementById("size");
+    let inputG = document.getElementById("inputG");
+    let inputXa = document.getElementById("inputXa");
+    let inputXb = document.getElementById("inputXb");
+    let key = document.getElementById("inputKey");
+
     function generate() {
-        let inputP = document.getElementById("inputP");
-        let inputQ = document.getElementById("inputQ");
-        let inputSize = document.getElementById("size");
-        let inputG = document.getElementById("inputG");
-        let inputXa = document.getElementById("inputXa");
-        let inputXb = document.getElementById("inputXb");
-        let key = document.getElementById("inputKey");
 
         ipcRenderer.send('getKeyDiffiHellman', {p: inputP.value, q: inputQ.value, size: inputSize.value});
-        ipcRenderer.on("Key", function(e, data){
-            inputP.value = data.p;
-            inputQ.value = data.q;
-            inputG.value = data.g;
-            inputXa.value = data.Xa;
-            key.value = data.Zab;
-        });
     }
+    ipcRenderer.on("Key", function(e, data){
+        inputP.value = data.p;
+        inputQ.value = data.q;
+        inputG.value = data.g;
+        inputXa.value = data.Xa;
+        key.value = data.Zab;
+    });
 </script>
 <script src="../functions.js"></script>
 </body>

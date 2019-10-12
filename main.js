@@ -10,6 +10,8 @@ let lab1Window;
 let lab2Window;
 let labDiffiHellman;
 let labDiffiHellmansub;
+let labShamir;
+let labAlGamal;
 
 function createWindow () {
   // Create the browser window.
@@ -65,6 +67,7 @@ function createWindow () {
     labDiffiHellman.loadFile('./pages/LabDiffiHellman.html');
     labDiffiHellman.on('close',function () {
       labDiffiHellman = 'null';
+      mainWindow.show();
     });
   };
 
@@ -80,8 +83,45 @@ function createWindow () {
       labDiffiHellmansub.loadFile('./pages/LabDiffiHellmansub.html');
       labDiffiHellmansub.on('close',function () {
           labDiffiHellmansub = 'null';
+          mainWindow.show();
         })
     };
+
+  const createlabShamir = () =>{
+    labShamir= new BrowserWindow({
+      width: 1000,
+      height: 600,
+      title: 'Шифр Шамира',
+      webPreferences: {
+        nodeIntegration: true,
+        nodeIntegrationInWorker: true
+      }
+    });
+    labShamir.loadFile('./pages/labShamir.html');
+    mainWindow.hide();
+    labShamir.on('close',function () {
+      labShamir = 'null';
+      mainWindow.show();
+    });
+  };
+
+  const createlabAlGamal = () =>{
+    labAlGamal= new BrowserWindow({
+      width: 1060,
+      height: 600,
+      title: 'Шифр Эль-Гамаля',
+      webPreferences: {
+        nodeIntegration: true,
+        nodeIntegrationInWorker: true
+      }
+    });
+    labAlGamal.loadFile('./pages/labAlGamal.html');
+    mainWindow.hide();
+    labAlGamal.on('close',function () {
+      labAlGamal = 'null';
+      mainWindow.show();
+    });
+  };
 
   ipcMain.on('lab1Open', function () {
       createlab1Window();
@@ -92,16 +132,24 @@ function createWindow () {
   ipcMain.on('labDiffiHellmanOpen', function () {
     createlabDiffiHellman();
     createlabDiffiHellmansub();
-    // mainWindow.hide();
+    mainWindow.hide();
   });
   ipcMain.on('getKeyDiffiHellman', function (e,data) {
       // console.table(data);
-      let output = cryptFunc.DiffiHellman(data.p,data.q, data.size);
+      let output = cryptFunc.DiffiHellman(data.p.toString(),data.q.toString(), data.size);
       // console.log(output);
-      labDiffiHellmansub.webContents.send('Key2', output);
+      labDiffiHellmansub.webContents.send('Key', output);
       labDiffiHellman.webContents.send('Key', output);
 
   });
+    ipcMain.on('labShamirOpen', function () {
+        createlabShamir();
+        mainWindow.hide();
+    });
+    ipcMain.on('labAlGamalOpen', function () {
+        createlabAlGamal();
+        mainWindow.hide();
+    });
   // and load the index.html of the app.
   mainWindow.loadFile('index.html');
   // Menu.setApplicationMenu(null);

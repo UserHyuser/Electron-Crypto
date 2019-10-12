@@ -315,6 +315,40 @@ class cryptFunctions {
         // console.table({q, p, g, Xa, Ya, Xb, Yb, Zab, Zba})
         return {q, p, g, Xa, Ya, Xb, Yb, Zab, Zba}
     }
+
+    static Shamir(message, size) {
+        let p = randomPrime(size); // Открытые
+        let g = 5n;
+
+        // 2 числа Ci
+        let c1, c2;
+        do {
+            c1 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
+            c2 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
+        } while (NOD(BigInt(c1), (p-1n)) !== 1n || NOD(BigInt(c2),(p-1n)) !== 1n);
+
+        //Вычисляем Di
+        let d1 = fastDegreeModule(g, c1, p);
+        let d2 = fastDegreeModule(g, c2, p);
+
+        // Шифрование
+        let cipher = asUTF8Codes(message).split(" ");
+
+        for (let i = 0; i < cipher.length; i++){
+            cipher[i] = (BigInt(cipher[i]) * fastDegreeModule(d2, c1, p)) % p;
+        }
+        cipher = cipher.join(' ');
+
+        let decipher = cipher.split(' ');
+
+        for (let i = 0; i < decipher.length; i++){
+            decipher[i] = (BigInt(decipher[i]) * fastDegreeModule(d1, p - 1n - c2, p)) % p;
+            decipher[i] = unicodeToChar(parseInt(decipher[i]));
+        }
+        decipher = decipher.join('');
+
+        return {p,g,c1,c2,d1,d2,cipher,decipher};
+    }
 }
 
 module.exports = cryptFunctions;
