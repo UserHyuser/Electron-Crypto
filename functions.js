@@ -304,15 +304,29 @@ function getPrimeNumbers(deg) { // указывается степень
     let q,p;
     while (true) {
         q = (bigInt.randBetween(min, max)).toString();
-        if (SolovayStrassenTest(q.toString(),128)) {
+        if (SolovayStrassenTest(q.toString(),32)) {
             p = (bigInt(2n*BigInt(q) + 1n)).toString();
-            if (SolovayStrassenTest(p.toString(),128)){ // Почему-то нужно передавать как строку BigInt не работает
+            if (SolovayStrassenTest(p.toString(),32)){ // Почему-то нужно передавать как строку BigInt не работает
                 return {p, q}
             }
         }
     }
 }
 
+function getPrimeNumbersBits(bits) { // указывается степень
+    const min = bigInt.one.shiftLeft(bits - 1);
+    const max = bigInt.one.shiftLeft(bits).prev();
+    let q,p;
+    while (true) {
+        q = (bigInt.randBetween(min, max));
+        if (q.isProbablePrime(5)) {
+            p = (bigInt(2n*BigInt(q) + 1n));
+            if (p.isProbablePrime(5)){ // Почему-то нужно передавать как строку BigInt не работает
+                return {p: p.toString(), q: q.toString()}
+            }
+        }
+    }
+}
 // Якобиан
 function calculateJacobian(a, n) {
     if (!a)
@@ -522,5 +536,98 @@ function AlGamalGenerate(size, P) {
 
 }
 
+function Shamir(message, size) { // size - порядок // p = (q*2) + 1
 
+    let numbers  = getPrimeNumbersBits(size);
+    let p = BigInt(numbers.p); // Открытое большое число
+    let Ca = 2n; // абонент A
+    while (NOD(Ca, p-1n) !== 1n){
+        Ca = BigInt(bigInt.randBetween(1,p-1n).toString());
+    }
+    let Da = BigInt((bigInt(Ca).modInv(p-1n)).toString());
 
+    let Cb = 2n; // абонент B
+    while (NOD(Cb, p-1n) !== 1n){
+        Cb = BigInt(bigInt.randBetween(1,p-1n).toString());
+    }
+    let Db = BigInt((bigInt(Cb).modInv(p-1n)).toString());
+    // A формирует x1
+    let x1 = asUTF8Codes(message).split(" ");
+    for (let i = 0; i < x1.length; i++){
+        x1[i] = fastDegreeModule(x1[i], Ca, p);
+    }
+    // x1 отправляется к абоненту B
+    let x2 = [];
+    for (let i = 0; i < x1.length; i++){
+        x2[i] = fastDegreeModule(x1[i], Cb, p);
+    }
+    // x2 отправляется к абоненту A
+    let x3 = [];
+    for (let i = 0; i < x2.length; i++){
+        x3[i] = fastDegreeModule(x2[i], Da, p);
+    }
+    // x3 отправляется к абоненту B и он получает исходное сообщение
+    let x4 = [];
+    for (let i = 0; i < x3.length; i++){
+        x4[i] = fastDegreeModule(x3[i], Db, p);
+        x4[i] = unicodeToChar(parseInt(x4[i]));
+    }
+    x4 = x4.join('');
+    return {p, Ca, Cb, Da, Db, x4}
+}
+
+function ShamirEncode(message, P, CA, DA, CB, DB) { // size - порядок // p = (q*2) + 1
+    let p = BigInt(P); // Открытое большое число
+    let Ca = BigInt(CA); // абонент A
+    while (NOD(Ca, p-1n) !== 1n){
+        Ca = BigInt(bigInt.randBetween(1,p-1n).toString());
+    }
+    let Da = BigInt(DA || BigInt((bigInt(Ca).modInv(p-1n)).toString()));
+
+    let Cb = BigInt(CB); // абонент B
+    while (NOD(Cb, p-1n) !== 1n){
+        Cb = BigInt(bigInt.randBetween(1,p-1n).toString());
+    }
+    let Db = BigInt(DB || BigInt((bigInt(Cb).modInv(p-1n)).toString()));
+    // A формирует x1
+    let x1 = asUTF8Codes(message).split(" ");
+    for (let i = 0; i < x1.length; i++){
+        x1[i] = fastDegreeModule(x1[i], Ca, p);
+    }
+    // x1 отправляется к абоненту B
+    let x2 = [];
+    for (let i = 0; i < x1.length; i++){
+        x2[i] = fastDegreeModule(x1[i], Cb, p);
+    }
+    // x2 отправляется к абоненту A
+    let x3 = [];
+    for (let i = 0; i < x2.length; i++){
+        x3[i] = fastDegreeModule(x2[i], Da, p);
+    }
+    // x3 отправляется к абоненту B и он получает исходное сообщение
+    let x4 = [];
+    for (let i = 0; i < x3.length; i++){
+        x4[i] = fastDegreeModule(x3[i], Db, p);
+        x4[i] = unicodeToChar(parseInt(x4[i]));
+    }
+    x4 = x4.join('');
+    return {p, Ca, Cb, Da, Db, x1, x2, x3, x4}
+}
+
+function ShamirGenerate(size) { // size - порядок // p = (q*2) + 1
+
+    let numbers  = getPrimeNumbersBits(size);
+    let p = BigInt(numbers.p); // Открытое большое число
+    let Ca = 2n; // абонент A
+    while (NOD(Ca, p-1n) !== 1n){
+        Ca = BigInt(bigInt.randBetween(1,p-1n).toString());
+    }
+    let Da = BigInt((bigInt(Ca).modInv(p-1n)).toString());
+
+    let Cb = 2n; // абонент B
+    while (NOD(Cb, p-1n) !== 1n){
+        Cb = BigInt(bigInt.randBetween(1,p-1n).toString());
+    }
+    let Db = BigInt((bigInt(Cb).modInv(p-1n)).toString());
+    return {p, Ca, Cb, Da, Db}
+}
