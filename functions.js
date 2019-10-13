@@ -2,6 +2,7 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 const bigInt = require('big-integer');
+const crypto = require('crypto')
 class cryptFunctions {
     constructor () {}
     // возвращает строки чтобы адекватно отправлялось по сокетам
@@ -314,14 +315,14 @@ function getPrimeNumbers(deg) { // указывается степень
 }
 
 function getPrimeNumbersBits(bits) { // указывается степень
-    const min = bigInt.one.shiftLeft(bits - 1);
-    const max = bigInt.one.shiftLeft(bits).prev();
+    console.time('gen')
     let q,p;
     while (true) {
-        q = (bigInt.randBetween(min, max));
-        if (q.isProbablePrime(5)) {
-            p = (bigInt(2n*BigInt(q) + 1n));
-            if (p.isProbablePrime(5)){ // Почему-то нужно передавать как строку BigInt не работает
+        q = BigInt('0x' + crypto.randomBytes(~~(bits/8)).toString('hex'));
+        if (SolovayStrassenTest(q,10)) {
+            console.timeLog('gen');
+            p = ((2n*q + 1n));
+            if (SolovayStrassenTest(p,10)){ // Почему-то нужно передавать как строку BigInt не работает
                 return {p: p.toString(), q: q.toString()}
             }
         }
