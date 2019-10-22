@@ -184,27 +184,27 @@ function countFactorOf2Degree(num) {
 }
 
 function getInverseElem(a,m) {
+    m = BigInt(m); a = BigInt(a);
     a = (a % m + m) % m
     if (!a || m < 2n) {
         return NaN // invalid input
     }
-
-    const s = []
-    let b = m
+    const s = [];
+    let b = m;
     while(b) {                  // Алгоритм Евклида с записью промежуточных значений
-        [a, b] = [b, a % b]
+        [a, b] = [b, a % b];
         s.push({a, b})
     }
     if (a !== 1n) {
         return NaN // Обратного элемента нет
     }
     // Нахождение обратного элемента по "ручному алгоритму"
-    let x = 1n
-    let y = 0n
+    let x = 1n;
+    let y = 0n;
     for(let i = s.length - 2; i >= 0; --i) {
-        [x, y] = [y,  x - y * Math.floor(s[i].a / s[i].b)]
+        [x, y] = [y,  x - y * ~~(s[i].a / s[i].b)]
     }
-    let t = (y % m + m) % m;
+    let t = ((y % m) + m) % m;
     if (t > 0n){
         return t
     } else {
@@ -253,36 +253,28 @@ const isPrime = (num) => {
 }
 
 function bigNumbersGenerate(keysize, P, Q) {
-
-    const e = bigInt(65537);
-    let p = bigInt(P) || 0;
-    let q = bigInt(Q) || 0;
+    const e = BigInt(65537);
+    let p = BigInt(P) || 0;
+    let q = BigInt(Q) || 0;
     let totient;
 
     if (!isNaN(parseInt(keysize))){
         do {
-            p = randomPrime(keysize / 2);
-            console.log(p);
-            q = randomPrime(keysize / 2);
-            console.log(q);
-            totient = bigInt.lcm(               //Наименьшее общее кратное
-                p.prev(), // -1
-                q.prev()
-            );
+            p = BigInt(randomPrime(keysize / 2));
+            q = BigInt(randomPrime(keysize / 2)); // По сути под E подыскиваются нужные простые p и q. Не знаю, норм ли это
+            totient = (p-1n)*(q-1n)
         } while (bigInt.gcd(e, totient).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
     } else {
-        totient = bigInt.lcm(
-            p.prev(),
-            q.prev()
-        );
-    }
+        totient = (p-1n)*(q-1n)
 
+    }
+    //console.log({ d: getInverseElem(e,totient), totient, e})
     return {
         p,
         q,
         e,
-        n: p.multiply(q),
-        d: e.modInv(totient),
+        n: p*q,
+        d: bigInt(e).modInv(totient),
     };
 }
 
@@ -294,7 +286,7 @@ function randomPrime(bits) {
         let p = bigInt.randBetween(min, max);
         // console.log(p);
         if (p.isProbablePrime(32)) {
-            return p;
+            return p.toString();
         }
     }
 }
@@ -305,7 +297,7 @@ function getPrimeNumbers(deg) { // указывается степень
     let q,p;
     while (true) {
         q = (bigInt.randBetween(min, max)).toString();
-        if (SolovayStrassenTest(q.toString(),32)) {
+        if (SolovayStrassenTest(q.toString(),32)) { // ?? Говнокод? TODO: Разобраться
             p = (bigInt(2n*BigInt(q) + 1n)).toString();
             if (SolovayStrassenTest(p.toString(),32)){ // Почему-то нужно передавать как строку BigInt не работает
                 return {p, q}
@@ -314,7 +306,7 @@ function getPrimeNumbers(deg) { // указывается степень
     }
 }
 
-function getPrimeNumbersBits(bits) { // указывается степень
+function getPrimeNumbersBits(bits) { // У p-1 будет большой простой делитель
     console.time('gen')
     let q,p;
     while (true) {
@@ -323,7 +315,7 @@ function getPrimeNumbersBits(bits) { // указывается степень
             console.timeLog('gen');
             p = ((2n*q + 1n));
             if (SolovayStrassenTest(p,10)){ // Почему-то нужно передавать как строку BigInt не работает
-                return {p: p.toString(), q: q.toString()}
+                return {p, q}
             }
         }
     }

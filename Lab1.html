@@ -137,34 +137,34 @@
     const degreeModule = (a, p, m) => {
         return (a ** p) % m;
     };
-    function getInverseElem(a,m){
+    function getInverseElem(a,m) {
+        m = BigInt(m); a = BigInt(a);
         a = (a % m + m) % m
-        if (!a || m < 2) {
+        if (!a || m < 2n) {
             return NaN // invalid input
         }
-        const s = []
-        let b = m
+        const s = [];
+        let b = m;
         while(b) {                  // Алгоритм Евклида с записью промежуточных значений
-            [a, b] = [b, a % b]
+            [a, b] = [b, a % b];
             s.push({a, b})
         }
-        if (a !== 1) {
+        if (a !== 1n) {
             return NaN // Обратного элемента нет
         }
         // Нахождение обратного элемента по "ручному алгоритму"
-        let x = 1
-        let y = 0
+        let x = 1n;
+        let y = 0n;
         for(let i = s.length - 2; i >= 0; --i) {
-            [x, y] = [y,  x - y * Math.floor(s[i].a / s[i].b)]
+            [x, y] = [y,  x - y * ~~(s[i].a / s[i].b)]
         }
-        let t = (y % m + m) % m;
-        if (t > 0){
+        let t = ((y % m) + m) % m;
+        if (t > 0n){
             return t
         } else {
             return t + m;
         }
-
-}
+    }
 
 </script>
 </body>

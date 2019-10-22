@@ -1,6 +1,6 @@
 {
-  "name": "Electron crypto",
-  "version": "0.7",
+  "name": "electron-crypto",
+  "version": "1.0.0",
   "description": "Realization of crypto protocols on Electron",
   "main": "main.js",
   "scripts": {
@@ -9,10 +9,13 @@
   "repository": "",
   "keywords": [
     "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
+    "crypto",
+    "cryptography",
+    "Shamir",
+    "RSA",
+    "El Gamal",
+    "ElGamal",
+    "diffie hellman"
   ],
   "author": "Nikita",
   "license": "CC0-1.0",

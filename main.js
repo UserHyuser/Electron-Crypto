@@ -49,7 +49,7 @@ function createWindow () {
         nodeIntegration: true
       }
     });
-    lab2Window.loadFile('Lab2.html');
+    lab2Window.loadFile('./pages/LabRSA.html');
     lab2Window.on('close',function () {
       lab2Window = 'null';
     });
