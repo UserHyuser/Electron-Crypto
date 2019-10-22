@@ -224,7 +224,6 @@ function NOD(a, b) {
     if (!b) {
         return a;
     }
-
     return NOD(b, a % b);
 }
 
@@ -253,28 +252,30 @@ const isPrime = (num) => {
 }
 
 function bigNumbersGenerate(keysize, P, Q) {
-    const e = BigInt(65537);
+    let e = BigInt(65537);
     let p = BigInt(P) || 0;
     let q = BigInt(Q) || 0;
     let totient;
 
     if (!isNaN(parseInt(keysize))){
-        do {
-            p = BigInt(randomPrime(keysize / 2));
-            q = BigInt(randomPrime(keysize / 2)); // По сути под E подыскиваются нужные простые p и q. Не знаю, норм ли это
-            totient = (p-1n)*(q-1n)
-        } while (bigInt.gcd(e, totient).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
+        p = BigInt(randomPrime(keysize / 2));
+        q = BigInt(randomPrime(keysize / 2));
+        totient = (p-1n)*(q-1n);
+        if(NOD(e,totient) !== 1n){
+            do {
+                e = bigInt.randBetween(5n, totient - 1n)
+            } while (bigInt.gcd(e, totient).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
+        }
     } else {
         totient = (p-1n)*(q-1n)
-
     }
-    //console.log({ d: getInverseElem(e,totient), totient, e})
+    console.log({ d: getInverseElem(e,totient), totient, e})
     return {
         p,
         q,
         e,
         n: p*q,
-        d: bigInt(e).modInv(totient),
+        d: getInverseElem(e,totient),
     };
 }
 
