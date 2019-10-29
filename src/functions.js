@@ -2,7 +2,8 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 const bigInt = require('big-integer');
-const crypto = require('crypto')
+const crypto = require('crypto');
+/*Class of functions for export them to main.js*/
 class cryptFunctions {
     constructor () {}
     // возвращает строки чтобы адекватно отправлялось по сокетам
@@ -91,7 +92,8 @@ class cryptFunctions {
 }
 module.exports = cryptFunctions;
 
-
+/*A - base, P - power, M - module
+* returns (A ** P) mod M for any numbers*/
 function fastDegreeModule(A,P,M) {
     let a = BigInt(A); let p = BigInt(P); let m = BigInt(M);
     let result = 1n;
@@ -116,10 +118,14 @@ function fastDegreeModule(A,P,M) {
     return result;
 }
 
+/*Same result but it's not optimal
+* Also it can't evaluate a REAL big numbers*/
 const degreeModule = (a, p, m) => {
     return (a ** p) % m;
 };
 
+/*RSA encryption
+* Message, open key (e, n)*/
 function RSAEncrypt(message, e, n){
     let c = asUTF8Codes(message).split(" ");
     n = BigInt(n);
@@ -133,6 +139,8 @@ function RSAEncrypt(message, e, n){
     return c.join(' ');
 }
 
+/*RSA encryption
+* Message, hidden key e, open key n*/
 function RSADecrypt(message, d, n){
     n = BigInt(n);
     d = BigInt(d);
@@ -155,6 +163,7 @@ function RSADecrypt(message, d, n){
     return result.join('');
 }
 
+/*String to array of UTF8 codes*/
 function asUTF8Codes(str) {
     let output = "";
     for (let i = 0; i < str.length; i++) {
@@ -163,10 +172,13 @@ function asUTF8Codes(str) {
     return output.trim();
 }
 
+/*Number to UTF char*/
 function unicodeToChar(text) {
     return String.fromCharCode(parseInt(text))
 }
 
+/*Factorize number to sum of degrees of 2
+* returns a string like "2 4 8" for 14 */
 function countFactorOf2Degree(num) {
     let tmp = 1n;
     if (num === 0n) {
@@ -180,9 +192,10 @@ function countFactorOf2Degree(num) {
     tmp /= 2n;
     num = num - tmp;
     return tmp.toString() + " " + countFactorOf2Degree(num)
-
 }
 
+/*Find d = a^(-1) mod m
+* uses an Extended Euclid's algorithm */
 function getInverseElem(a,m) {
     m = BigInt(m); a = BigInt(a);
     a = (a % m + m) % m
@@ -212,14 +225,7 @@ function getInverseElem(a,m) {
     }
 }
 
-function NODex(a, b) {
-    if (!b) {
-        return a;
-    }
-
-    return NOD(b, a % b);
-}
-
+/*GCD - Euclid's algorithm to find Greatest common divisor */
 function NOD(a, b) {
     if (!b) {
         return a;
@@ -227,58 +233,37 @@ function NOD(a, b) {
     return NOD(b, a % b);
 }
 
-function genKeys (P, Q){
-    let p = BigInt(P) || 113n;
-    let q = BigInt(Q) || 281n;
-    /*if(isPrime(p) === -1 || isPrime(q) === -1){
-        return false
-    }*/
-    let n = BigInt(p*q);
-    let eilerNumber = BigInt((p-1n)*(q-1n));
-
-    // Gen e
-    let e = BigInt(65537);
-    // while (NOD(e,eilerNumber) !== 1n){
-    //     e++;
-    // }
-    d = BigInt(bigInt(e).modInv(eilerNumber));
-    return {p:p, q:q, e:e, n:n, eilerNumber:eilerNumber, d:d};
-}
-
-const isPrime = (num) => {
-    for(let i = 2, s = Math.sqrt(num); i <= s; i++)
-        if(num % i === 0) return false;
-    return num > 1;
-}
-
+/*Generate P, Q, N, E, D for RSA algorithm*/
 function bigNumbersGenerate(keysize, P, Q) {
     let e = BigInt(65537);
     let p = BigInt(P) || 0;
     let q = BigInt(Q) || 0;
-    let totient;
+    let eilerFunc;
 
     if (!isNaN(parseInt(keysize))){
         p = BigInt(randomPrime(keysize / 2));
         q = BigInt(randomPrime(keysize / 2));
-        totient = (p-1n)*(q-1n);
-        if(NOD(e,totient) !== 1n){
+        eilerFunc = (p-1n)*(q-1n);
+        if(NOD(e,eilerFunc) !== 1n){
             do {
-                e = bigInt.randBetween(5n, totient - 1n)
-            } while (bigInt.gcd(e, totient).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
+                e = bigInt.randBetween(5n, eilerFunc - 1n)
+            } while (bigInt.gcd(e, eilerFunc).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
         }
     } else {
-        totient = (p-1n)*(q-1n)
+        eilerFunc = (p-1n)*(q-1n)
     }
-    console.log({ d: getInverseElem(e,totient), totient, e})
+    // console.log({ d: getInverseElem(e,totient), totient, e})
     return {
         p,
         q,
         e,
         n: p*q,
-        d: getInverseElem(e,totient),
+        d: getInverseElem(e,eilerFunc),
     };
 }
 
+/*Generate a prime number
+* size in bits*/
 function randomPrime(bits) {
     const min = bigInt.one.shiftLeft(bits - 1);
     const max = bigInt.one.shiftLeft(bits).prev();
@@ -292,13 +277,16 @@ function randomPrime(bits) {
     }
 }
 
+/*Generate 2 prime numbers P and Q
+* Q consist of deg digits
+* P = Q*2 + 1*/
 function getPrimeNumbers(deg) { // указывается степень
     const min = BigInt(10n ** (BigInt(deg)-2n));
     const max = BigInt(10n ** (BigInt(deg)));
     let q,p;
     while (true) {
         q = (bigInt.randBetween(min, max)).toString();
-        if (SolovayStrassenTest(q.toString(),32)) { // ?? Говнокод? TODO: Разобраться
+        if (SolovayStrassenTest(q.toString(),32)) {
             p = (bigInt(2n*BigInt(q) + 1n)).toString();
             if (SolovayStrassenTest(p.toString(),32)){ // Почему-то нужно передавать как строку BigInt не работает
                 return {p, q}
@@ -307,21 +295,26 @@ function getPrimeNumbers(deg) { // указывается степень
     }
 }
 
+/*Generate 2 prime numbers P and Q
+* Q size in bits; P = Q*2 + 1
+* This function uses a secure generation of bytes with 'crypto' object*/
 function getPrimeNumbersBits(bits) { // У p-1 будет большой простой делитель
-    console.time('gen')
+
+    // console.time('gen')
     let q,p;
     while (true) {
         q = BigInt('0x' + crypto.randomBytes(~~(bits/8)).toString('hex'));
         if (SolovayStrassenTest(q,10)) {
-            console.timeLog('gen');
+            // console.timeLog('gen');
             p = ((2n*q + 1n));
-            if (SolovayStrassenTest(p,10)){ // Почему-то нужно передавать как строку BigInt не работает
+            if (SolovayStrassenTest(p,10)){
                 return {p, q}
             }
         }
     }
 }
-// Якобиан
+
+/*Find a Jacobian*/
 function calculateJacobian(a, n) {
     if (!a)
         return 0;// (0/n) = 0
@@ -362,11 +355,9 @@ function calculateJacobian(a, n) {
         return ans;
     return 0;
 }
-// Тест на простоту Соловея - Штрассена (псевдопростое или точно составное)
 
-/**
- * @return {boolean}
- */
+/*Test on primarity of a number P
+* returns bool*/
 function SolovayStrassenTest(p, iterations) {
     p = BigInt(p);
     if (p < 2n)
@@ -387,9 +378,11 @@ function SolovayStrassenTest(p, iterations) {
     return true;
 }
 
+/*An Diffie-Hellman algorithm
+* Can get (P and Q) OR size of them in number of digits*/
 function DiffiHellman(P,Q, size){
     let p,q;
-    if (SolovayStrassenTest(BigInt(P),128) && SolovayStrassenTest(BigInt(Q),128)){
+    if (SolovayStrassenTest(BigInt(P),32) && SolovayStrassenTest(BigInt(Q),32)){
         p = BigInt(P); q = BigInt(Q);
     } else {
         let numbers = getPrimeNumbers(size);
@@ -418,6 +411,7 @@ function DiffiHellman(P,Q, size){
     return {q, p, g, Xa, Ya, Xb, Yb, Zab, Zba}
 }
 
+/*Full Al Gamal algorithm*/
 /*function AlGamal(message, size, P, G, C1, C2, D1, D2) {
     let p = BigInt(P || BigInt(randomPrime(size).toString())); // Открытые
     let g = BigInt(G || 3n);
@@ -530,6 +524,7 @@ function AlGamalGenerate(size, P) {
 
 }
 
+/*Full Shamir encryption and decryption algorithm*/
 function Shamir(message, size) { // size - порядок // p = (q*2) + 1
 
     let numbers  = getPrimeNumbersBits(size);
