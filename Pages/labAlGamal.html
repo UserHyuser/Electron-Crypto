@@ -71,11 +71,11 @@
     }
     function encode() {
         let message = document.getElementById("message").value;
-        document.getElementById("cryptMessage").value = AlGamalEncode(message, inputP.value, inputK.value, inputD2.value)
+        document.getElementById("cryptMessage").value = AlGamalEncrypt(message, inputP.value, inputK.value, inputD2.value)
     }
     function decode() {
         let message = document.getElementById("cryptMessage").value;
-        document.getElementById("message").value = AlGamalDecode(message, inputP.value, inputC2.value, inputR.value)
+        document.getElementById("message").value = AlGamalDecrypt(message, inputP.value, inputC2.value, inputR.value)
     }
 
 </script>

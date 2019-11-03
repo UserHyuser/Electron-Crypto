@@ -29,6 +29,8 @@
     <button class="btn waves-effect waves-light" onclick="labShamirButton()">Шифр Шамира</button>
     <br><br>
     <button class="btn waves-effect waves-light" onclick="labAlGamalButton()">Шифр Эль-Гамаля</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="MD5Button()">MD5 Hash</button>
 </div>
 
 
@@ -56,6 +58,9 @@
     }
     function labAlGamalButton() {
         ipcRenderer.send('labAlGamalOpen');
+    }
+    function MD5Button() {
+        ipcRenderer.send('MD5Open');
     }
 </script>
 
