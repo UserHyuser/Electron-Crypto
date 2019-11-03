@@ -446,14 +446,10 @@ function DiffiHellman(P,Q, size){
     return {p,g,c1,c2,d1,d2,cipher,decipher};
 }*/
 
-function AlGamalEncode(message, P, G, C1, D2) {
-    let p = BigInt(P); // Открытые
-    let g = BigInt(G || 3n);
-    while (NOD(g, p-1n) !== 1n){
-        g++;
-    }
+function AlGamalEncode(message, P, K, D2) {
+    let p = BigInt(P);
     // 2 числа Ci
-    let c1 = BigInt(C1);
+    let k = BigInt(K);
     //Вычисляем Di
     let d2 = BigInt(D2);
 
@@ -461,29 +457,25 @@ function AlGamalEncode(message, P, G, C1, D2) {
     let cipher = asUTF8Codes(message).split(" ");
 
     for (let i = 0; i < cipher.length; i++){
-        cipher[i] = (BigInt(cipher[i]) * fastDegreeModule(d2, c1, p)) % p;
+        cipher[i] = (BigInt(cipher[i]) * fastDegreeModule(d2, k, p)) % p; // Вычисляем е = m * (Db ^ k) mod p
     }
     cipher = cipher.join(' ');
 
     return cipher;
 }
 
-function AlGamalDecode(message, P, G, C2, D1) {
-    let p = BigInt(P); // Открытые
-    let g = BigInt(G || 3n);
-    while (NOD(g, p-1n) !== 1n){
-        g++;
-    }
+function AlGamalDecode(message, P, C2, R) {
+    let p = BigInt(P);
     // 2 числа Ci
     let c2 = BigInt(C2);
     //Вычисляем Di
-    let d1 = BigInt(D1);
+    let r = BigInt(R);
 
     // Шифрование
     let decipher = message.split(' ');
 
     for (let i = 0; i < decipher.length; i++){
-        decipher[i] = (BigInt(decipher[i]) * fastDegreeModule(d1, p - 1n - c2, p)) % p;
+        decipher[i] = (BigInt(decipher[i]) * fastDegreeModule(r, p - 1n - c2, p)) % p;
         decipher[i] = unicodeToChar(parseInt(decipher[i]));
     }
     decipher = decipher.join('');
@@ -491,80 +483,29 @@ function AlGamalDecode(message, P, G, C2, D1) {
     return decipher;
 }
 
-function AlGamalGenerate(size, P) {
+function AlGamalGenerate(size, P) { // При P слишком малом может не хватить мощности алфавита для символов Unicode
+    let p;
     if (!size){
-        let p = BigInt(P || BigInt(randomPrime(size).toString())); // Открытые
-        let g = 3n;
-        while (NOD(g, p-1n) !== 1n){
-            g++;
-        }
-        // 2 числа Ci
-        let c1 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
-        let c2 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
-        //Вычисляем Di
-        let d1 = fastDegreeModule(g, c1, p);
-        let d2 = fastDegreeModule(g, c2, p);
-        return {p,g,c1,c2,d1,d2};
+        p = BigInt(P || BigInt(randomPrime(size).toString())); // Открытые
     } else {
-        let p = BigInt(randomPrime(size).toString()); // Открытые
-        let g = 3n;
-        while (NOD(g, p-1n) !== 1n){
-            g++;
-        }
-        // 2 числа Ci
-        let c1 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
-        let c2 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
-        //Вычисляем Di
-        let d1 = fastDegreeModule(g, c1, p);
-        let d2 = fastDegreeModule(g, c2, p);
-        return {p,g,c1,c2,d1,d2};
+        p = BigInt(randomPrime(size).toString()); // Открытые
     }
-
-
-
+    let g = BigInt(bigInt.randBetween(1, (p-1n)).toString());
+    while (NOD(g, p-1n) !== 1n){
+        g = BigInt(bigInt.randBetween(1, (p-1n)).toString());
+    }
+    // 2 числа Ci
+    // Абонент А выбирает случайное число k и вычисляет из него r, e
+    let k = BigInt(bigInt.randBetween(1, (p-1n).toString()));
+    let r = fastDegreeModule(g, k, p);
+    let c2 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
+    //Вычисляем Di
+    let d2 = fastDegreeModule(g, c2, p);
+    return {p,g,c2,d2,k,r};
 }
 
-/*Full Shamir encryption and decryption algorithm*/
-function Shamir(message, size) { // size - порядок // p = (q*2) + 1
-
-    let numbers  = getPrimeNumbersBits(size);
-    let p = BigInt(numbers.p); // Открытое большое число
-    let Ca = 2n; // абонент A
-    while (NOD(Ca, p-1n) !== 1n){
-        Ca = BigInt(bigInt.randBetween(1,p-1n).toString());
-    }
-    let Da = BigInt((bigInt(Ca).modInv(p-1n)).toString());
-
-    let Cb = 2n; // абонент B
-    while (NOD(Cb, p-1n) !== 1n){
-        Cb = BigInt(bigInt.randBetween(1,p-1n).toString());
-    }
-    let Db = BigInt((bigInt(Cb).modInv(p-1n)).toString());
-    // A формирует x1
-    let x1 = asUTF8Codes(message).split(" ");
-    for (let i = 0; i < x1.length; i++){
-        x1[i] = fastDegreeModule(x1[i], Ca, p);
-    }
-    // x1 отправляется к абоненту B
-    let x2 = [];
-    for (let i = 0; i < x1.length; i++){
-        x2[i] = fastDegreeModule(x1[i], Cb, p);
-    }
-    // x2 отправляется к абоненту A
-    let x3 = [];
-    for (let i = 0; i < x2.length; i++){
-        x3[i] = fastDegreeModule(x2[i], Da, p);
-    }
-    // x3 отправляется к абоненту B и он получает исходное сообщение
-    let x4 = [];
-    for (let i = 0; i < x3.length; i++){
-        x4[i] = fastDegreeModule(x3[i], Db, p);
-        x4[i] = unicodeToChar(parseInt(x4[i]));
-    }
-    x4 = x4.join('');
-    return {p, Ca, Cb, Da, Db, x4}
-}
-
+/*Full Shamir encryption and decryption algorithm
+* returns an all steps of encoding and decoding,*/
 function ShamirEncode(message, P, CA, DA, CB, DB) { // size - порядок // p = (q*2) + 1
     let p = BigInt(P); // Открытое большое число
     let Ca = BigInt(CA); // абонент A
@@ -603,6 +544,8 @@ function ShamirEncode(message, P, CA, DA, CB, DB) { // size - порядок // 
     return {p, Ca, Cb, Da, Db, x1, x2, x3, x4}
 }
 
+/*Generate P, Ca, Cb, Da, Db for Shamir's alrorithm
+* size of P is 'size' bits*/
 function ShamirGenerate(size) { // size - порядок // p = (q*2) + 1
 
     let numbers  = getPrimeNumbersBits(size);
@@ -620,3 +563,4 @@ function ShamirGenerate(size) { // size - порядок // p = (q*2) + 1
     let Db = BigInt((bigInt(Cb).modInv(p-1n)).toString());
     return {p, Ca, Cb, Da, Db}
 }
+

@@ -18,9 +18,9 @@
     <label id="">Введите данные для шифрования</label>
     <label id="labelG">G:</label>
     <input type="text" class="form-control" id="inputG1" size="10">
-    <label id="labelN">C2:</label>
-    <input type="text" class="form-control" id="inputC2" size="30">
-    <label id="labelN">D2:</label>
+    <label id="labelK">K:</label>
+    <input type="text" class="form-control" id="inputK" size="30">
+    <label id="labelD2">Db:</label>
     <input type="text" class="form-control" id="inputD2" size="30">
     <br>
     <textarea cols="126" rows="5" id="message"></textarea>
@@ -30,12 +30,10 @@
 <br>
 <div>
     <label >Введите данные для расшифрования</label>
-    <label id="labelG">G:</label>
-    <input type="text" class="form-control" id="inputG2" size="10">
-    <label id="labelD">C1:</label>
-    <input type="text" class="form-control" id="inputC1" size="29">
-    <label id="labelN">D1:</label>
-    <input type="text" class="form-control" id="inputD1" size="28">
+    <label id="labelD2">Cb:</label>
+    <input type="text" class="form-control" id="inputC2" size="30">
+    <label id="labelN">R:</label>
+    <input type="text" class="form-control" id="inputR" size="28">
     <br>
     <textarea cols="126" rows="5" id="cryptMessage"></textarea>
     <br>
@@ -50,12 +48,10 @@
     //const cryptFunc = require('../functions');
 
     let inputP = document.getElementById("inputP");
-    let inputC1 = document.getElementById("inputC1");
-    let inputG1 = document.getElementById("inputG1");
-    let inputG2 = document.getElementById("inputG2");
+    let inputK = document.getElementById("inputK");
+    let inputR = document.getElementById("inputR");
     let inputC2 = document.getElementById("inputC2");
     let inputD2 = document.getElementById("inputD2");
-    let inputD1 = document.getElementById("inputD1");
     let keysize = document.getElementById("keysize");
 
     function clearInput(id) {
@@ -64,22 +60,22 @@
     }
     
     function generate() {
-        let keys = AlGamalGenerate(keysize.value, inputP.value, inputG1.value, inputC1.value, inputC2.value, inputD1.value, inputD2.value)
+        let keys = AlGamalGenerate(keysize.value, inputP.value)
         inputP.value = keys.p;
         inputG1.value = keys.g;
-        inputG2.value = keys.g;
-        inputC1.value = keys.c1;
+        inputK.value = keys.k;
         inputC2.value = keys.c2;
-        inputD1.value = keys.d1;
+        inputR.value = keys.r;
         inputD2.value = keys.d2;
+        console.table(keys);
     }
     function encode() {
         let message = document.getElementById("message").value;
-        document.getElementById("cryptMessage").value = AlGamalEncode(message, inputP.value, inputG1.value, inputC1.value, inputD2.value)
+        document.getElementById("cryptMessage").value = AlGamalEncode(message, inputP.value, inputK.value, inputD2.value)
     }
     function decode() {
         let message = document.getElementById("cryptMessage").value;
-        document.getElementById("message").value = AlGamalDecode(message, inputP.value, inputG2.value, inputC2.value, inputD1.value)
+        document.getElementById("message").value = AlGamalDecode(message, inputP.value, inputC2.value, inputR.value)
     }
 
 </script>
