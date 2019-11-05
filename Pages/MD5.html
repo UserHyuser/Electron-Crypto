@@ -58,8 +58,6 @@
 	<label>Результат</label>
 	<textarea cols="70" rows="1" id="hash"></textarea>
 	<br>
-
-
 </div>
 
 <script src="../src/functions.js"></script>
@@ -85,7 +83,7 @@
 			if (err) throw err;
 			document.getElementById("hash").value = crypto.createHash('md5').update(data).digest('hex').toString()
 			console.log(data);
-			message.value = data.join(' ');
+			//message.value = data.join(' '); // Вывод байт занимает слишком много времени
 		});
 		return false;
 	};

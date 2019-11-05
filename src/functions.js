@@ -413,36 +413,36 @@ function DiffiHellman(P,Q, size){
 
 /*An Al Gamal algorithm in 3 functions
 * Encrypt and Decrypt functions return strings */
-function AlGamalEncrypt(message, P, K, D2) {
+function AlGamalEncrypt(message, P, D2, G) {
     let p = BigInt(P);
-    // 2 числа Ci
-    let k = BigInt(K);
-    //Вычисляем Di
+    let g = BigInt(G);
+    //Вычисляем Db
     let d2 = BigInt(D2);
+	let k;
 
     // Шифрование
     let cipher = asUTF8Codes(message).split(" ");
-
+	let rArray = [];
     for (let i = 0; i < cipher.length; i++){
+    	k = BigInt(bigInt.randBetween(1, (p-1n).toString()));
+    	rArray.push(fastDegreeModule(g, k, p));
         cipher[i] = (BigInt(cipher[i]) * fastDegreeModule(d2, k, p)) % p; // Вычисляем е = m * (Db ^ k) mod p
     }
-    cipher = cipher.join(' ');
 
-    return cipher;
+    return {cipher:cipher.join(' '), rArray: rArray.join(' ')};
 }
 
 function AlGamalDecrypt(message, P, C2, R) {
     let p = BigInt(P);
     // 2 числа Ci
     let c2 = BigInt(C2);
-    //Вычисляем Di
-    let r = BigInt(R);
 
     // Шифрование
     let decipher = message.split(' ');
+    let rArray = R.split(' ');
 
     for (let i = 0; i < decipher.length; i++){
-        decipher[i] = (BigInt(decipher[i]) * fastDegreeModule(r, p - 1n - c2, p)) % p;
+        decipher[i] = (BigInt(decipher[i]) * fastDegreeModule(rArray[i], p - 1n - c2, p)) % p;
         decipher[i] = unicodeToChar(parseInt(decipher[i]));
     }
     decipher = decipher.join('');
@@ -463,12 +463,10 @@ function AlGamalGenerate(size, P) { // При P слишком малом мож
     }
     // 2 числа Ci
     // Абонент А выбирает случайное число k и вычисляет из него r, e
-    let k = BigInt(bigInt.randBetween(1, (p-1n).toString()));
-    let r = fastDegreeModule(g, k, p);
     let c2 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
     //Вычисляем Di
     let d2 = fastDegreeModule(g, c2, p);
-    return {p,g,c2,d2,k,r};
+    return {p,g,c2,d2};
 }
 
 /*Full Shamir encryption and decryption algorithm
@@ -531,16 +529,13 @@ function ShamirGenerate(size) { // size - порядок // p = (q*2) + 1
     return {p, Ca, Cb, Da, Db}
 }
 
-function MD5Encode(str) {	// Calculate the md5 hash of a string
-    //
-    // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
-    // + namespaced by: Michael White (http://crestidg.com)
+function MD5Encode(str) {
 
-    var RotateLeft = function(lValue, iShiftBits) {
+    var RotateLeft = function(lValue, iShiftBits) { // Циклический сдвиг в лево
         return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
     };
 
-    var AddUnsigned = function(lX,lY) {
+    var AddUnsigned = function(lX,lY) { // Сложение побитовое без учета знака (Инкремент каждого из 4 регистров на значение до блока преобразования)
         var lX4,lY4,lX8,lY8,lResult;
         lX8 = (lX & 0x80000000);
         lY8 = (lY & 0x80000000);
@@ -566,7 +561,7 @@ function MD5Encode(str) {	// Calculate the md5 hash of a string
     var H = function(x,y,z) { return (x ^ y ^ z); };
     var I = function(x,y,z) { return (y ^ (x | (~z))); };
 
-    var FF = function(a,b,c,d,x,s,ac) {
+    var FF = function(a,b,c,d,x,s,ac) { // Первые 16 операций: a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s)
         a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
         return AddUnsigned(RotateLeft(a, s), b);
     };
@@ -586,7 +581,7 @@ function MD5Encode(str) {	// Calculate the md5 hash of a string
         return AddUnsigned(RotateLeft(a, s), b);
     };
 
-    var ConvertToWordArray = function(str) {
+    var ConvertToWordArray = function(str) { // Исходное сообщение в массив слов (по 32 бита)
         var lWordCount;
         var lMessageLength = str.length;
         var lNumberOfWords_temp1=lMessageLength + 8;
@@ -603,7 +598,7 @@ function MD5Encode(str) {	// Calculate the md5 hash of a string
         }
         lWordCount = (lByteCount-(lByteCount % 4))/4;
         lBytePosition = (lByteCount % 4)*8;
-        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
+        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition); // Добавление в конец сообщения 1 с нужным количеством нулей (длина сообщения И 10000...)
         lWordArray[lNumberOfWords-2] = lMessageLength<<3;
         lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
         return lWordArray;
@@ -619,18 +614,18 @@ function MD5Encode(str) {	// Calculate the md5 hash of a string
         return WordToHexValue;
     };
 
-    var x=Array();
+    var x = Array();
     var k,AA,BB,CC,DD,a,b,c,d;
-    var S11=7, S12=12, S13=17, S14=22;
+    var S11=7, S12=12, S13=17, S14=22; // Заранее определенные S для раундов алгоритма
     var S21=5, S22=9 , S23=14, S24=20;
     var S31=4, S32=11, S33=16, S34=23;
     var S41=6, S42=10, S43=15, S44=21;
 
     str = utf8_encode(str);
     x = ConvertToWordArray(str);
-    a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
+    a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476; // Инициализирущие A,B,C,D
 
-    for (k=0;k<x.length;k+=16) {
+    for (k=0;k<x.length;k+=16) { // 16*4 операций в цикле
         AA=a; BB=b; CC=c; DD=d;
         a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);
         d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);
@@ -701,10 +696,7 @@ function MD5Encode(str) {	// Calculate the md5 hash of a string
         c=AddUnsigned(c,CC);
         d=AddUnsigned(d,DD);
     }
-    function utf8_encode ( str_data ) {	// Encodes an ISO-8859-1 string to UTF-8
-        //
-        // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
-
+    function utf8_encode ( str_data ) {	// Encode to UTF-8
         str_data = str_data.replace(/\r\n/g,"\n");
         var utftext = "";
 

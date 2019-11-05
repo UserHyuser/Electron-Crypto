@@ -18,8 +18,6 @@
     <label id="">Введите данные для шифрования</label>
     <label id="labelG">G:</label>
     <input type="text" class="form-control" id="inputG1" size="10">
-    <label id="labelK">K:</label>
-    <input type="text" class="form-control" id="inputK" size="30">
     <label id="labelD2">Db:</label>
     <input type="text" class="form-control" id="inputD2" size="30">
     <br>
@@ -32,9 +30,11 @@
     <label >Введите данные для расшифрования</label>
     <label id="labelD2">Cb:</label>
     <input type="text" class="form-control" id="inputC2" size="30">
-    <label id="labelN">R:</label>
-    <input type="text" class="form-control" id="inputR" size="28">
-    <br>
+	<br>
+	<label id="labelN">R:</label>
+	<textarea cols="126" rows="5" id="inputR"></textarea>
+	<br>
+	<label >Криптограмма:</label>
     <textarea cols="126" rows="5" id="cryptMessage"></textarea>
     <br>
     <button onclick="decode()">Расшифровать</button>
@@ -48,8 +48,6 @@
     //const cryptFunc = require('../functions');
 
     let inputP = document.getElementById("inputP");
-    let inputK = document.getElementById("inputK");
-    let inputR = document.getElementById("inputR");
     let inputC2 = document.getElementById("inputC2");
     let inputD2 = document.getElementById("inputD2");
     let keysize = document.getElementById("keysize");
@@ -63,19 +61,20 @@
         let keys = AlGamalGenerate(keysize.value, inputP.value)
         inputP.value = keys.p;
         inputG1.value = keys.g;
-        inputK.value = keys.k;
         inputC2.value = keys.c2;
-        inputR.value = keys.r;
         inputD2.value = keys.d2;
         console.table(keys);
     }
     function encode() {
         let message = document.getElementById("message").value;
-        document.getElementById("cryptMessage").value = AlGamalEncrypt(message, inputP.value, inputK.value, inputD2.value)
+	    let tmp = AlGamalEncrypt(message, inputP.value, inputD2.value, inputG1.value)
+        document.getElementById("cryptMessage").value = tmp.cipher;
+	    document.getElementById("inputR").value = tmp.rArray;
     }
     function decode() {
         let message = document.getElementById("cryptMessage").value;
-        document.getElementById("message").value = AlGamalDecrypt(message, inputP.value, inputC2.value, inputR.value)
+        let rArray =  document.getElementById("inputR").value;
+        document.getElementById("message").value = AlGamalDecrypt(message, inputP.value, inputC2.value, rArray)
     }
 
 </script>
