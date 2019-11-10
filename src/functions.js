@@ -529,19 +529,20 @@ function ShamirGenerate(size) { // size - порядок // p = (q*2) + 1
     return {p, Ca, Cb, Da, Db}
 }
 
+/**
+ * Message Digest 5 (MD5)
+ **/
 function MD5Encode(str) {
-
-    var RotateLeft = function(lValue, iShiftBits) { // Циклический сдвиг в лево
-        return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
+    const RotateLeft = function (lValue, iShiftBits) { // Циклический сдвиг влево
+        return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
     };
-
-    var AddUnsigned = function(lX,lY) { // Сложение побитовое без учета знака (Инкремент каждого из 4 регистров на значение до блока преобразования)
-        var lX4,lY4,lX8,lY8,lResult;
+    const AddUnsigned = function (lX, lY) { // Сложение побитовое без учета знака (Инкремент каждого из 4 регистров на значение до блока преобразования)
+        let lX4, lY4, lX8, lY8, lResult;
         lX8 = (lX & 0x80000000);
         lY8 = (lY & 0x80000000);
         lX4 = (lX & 0x40000000);
         lY4 = (lY & 0x40000000);
-        lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
+        lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
         if (lX4 & lY4) {
             return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
         }
@@ -555,73 +556,72 @@ function MD5Encode(str) {
             return (lResult ^ lX8 ^ lY8);
         }
     };
-
-    var F = function(x,y,z) { return (x & y) | ((~x) & z); };
-    var G = function(x,y,z) { return (x & z) | (y & (~z)); };
-    var H = function(x,y,z) { return (x ^ y ^ z); };
-    var I = function(x,y,z) { return (y ^ (x | (~z))); };
-
-    var FF = function(a,b,c,d,x,s,ac) { // Первые 16 операций: a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s)
+    const F = function (x, y, z) {
+        return (x & y) | ((~x) & z);
+    };
+    const G = function (x, y, z) {
+        return (x & z) | (y & (~z));
+    };
+    const H = function (x, y, z) {
+        return (x ^ y ^ z);
+    };
+    const I = function (x, y, z) {
+        return (y ^ (x | (~z)));
+    };
+    const FF = function (a, b, c, d, x, s, ac) { // Первые 16 операций: a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s)
         a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
         return AddUnsigned(RotateLeft(a, s), b);
     };
-
-    var GG = function(a,b,c,d,x,s,ac) {
+    const GG = function (a, b, c, d, x, s, ac) {
         a = AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac));
         return AddUnsigned(RotateLeft(a, s), b);
     };
-
-    var HH = function(a,b,c,d,x,s,ac) {
+    const HH = function (a, b, c, d, x, s, ac) {
         a = AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac));
         return AddUnsigned(RotateLeft(a, s), b);
     };
-
-    var II = function(a,b,c,d,x,s,ac) {
+    const II = function (a, b, c, d, x, s, ac) {
         a = AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac));
         return AddUnsigned(RotateLeft(a, s), b);
     };
-
-    var ConvertToWordArray = function(str) { // Исходное сообщение в массив слов (по 32 бита)
-        var lWordCount;
-        var lMessageLength = str.length;
-        var lNumberOfWords_temp1=lMessageLength + 8;
-        var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
-        var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
-        var lWordArray=Array(lNumberOfWords-1);
-        var lBytePosition = 0;
-        var lByteCount = 0;
-        while ( lByteCount < lMessageLength ) {
-            lWordCount = (lByteCount-(lByteCount % 4))/4;
-            lBytePosition = (lByteCount % 4)*8;
-            lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount)<<lBytePosition));
+    const ConvertToWordArray = function (str) { // Исходное сообщение в массив слов (по 32 бита)
+        let lWordCount;
+        const lMessageLength = str.length;
+        const lNumberOfWords_temp1 = lMessageLength + 8;
+        const lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
+        const lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
+        const lWordArray = Array(lNumberOfWords - 1);
+        let lBytePosition = 0;
+        let lByteCount = 0;
+        while (lByteCount < lMessageLength) {
+            lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+            lBytePosition = (lByteCount % 4) * 8;
+            lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition));
             lByteCount++;
         }
-        lWordCount = (lByteCount-(lByteCount % 4))/4;
-        lBytePosition = (lByteCount % 4)*8;
-        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition); // Добавление в конец сообщения 1 с нужным количеством нулей (длина сообщения И 10000...)
-        lWordArray[lNumberOfWords-2] = lMessageLength<<3;
-        lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
+        lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+        lBytePosition = (lByteCount % 4) * 8;
+        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition); // Добавление в конец сообщения 1 с нужным количеством нулей (длина сообщения И 10000...)
+        lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
+        lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
         return lWordArray;
     };
-
-    var WordToHex = function(lValue) {
-        var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
-        for (lCount = 0;lCount<=3;lCount++) {
-            lByte = (lValue>>>(lCount*8)) & 255;
+    const WordToHex = function (lValue) {
+        let WordToHexValue = "", WordToHexValue_temp = "", lByte, lCount;
+        for (lCount = 0; lCount <= 3; lCount++) {
+            lByte = (lValue >>> (lCount * 8)) & 255;
             WordToHexValue_temp = "0" + lByte.toString(16);
-            WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);
+            WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length - 2, 2);
         }
         return WordToHexValue;
     };
-
     var x = Array();
     var k,AA,BB,CC,DD,a,b,c,d;
-    var S11=7, S12=12, S13=17, S14=22; // Заранее определенные S для раундов алгоритма
-    var S21=5, S22=9 , S23=14, S24=20;
-    var S31=4, S32=11, S33=16, S34=23;
-    var S41=6, S42=10, S43=15, S44=21;
-
-    str = utf8_encode(str);
+    const S11 = 7, S12 = 12, S13 = 17, S14 = 22; // Заранее определенные S для раундов алгоритма
+    const S21 = 5, S22 = 9, S23 = 14, S24 = 20;
+    const S31 = 4, S32 = 11, S33 = 16, S34 = 23;
+    const S41 = 6, S42 = 10, S43 = 15, S44 = 21;
+    str = Utf8Encode(str);
     x = ConvertToWordArray(str);
     a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476; // Инициализирущие A,B,C,D
 
@@ -696,28 +696,131 @@ function MD5Encode(str) {
         c=AddUnsigned(c,CC);
         d=AddUnsigned(d,DD);
     }
-    function utf8_encode ( str_data ) {	// Encode to UTF-8
-        str_data = str_data.replace(/\r\n/g,"\n");
-        var utftext = "";
+    const temp = WordToHex(a) + WordToHex(b) + WordToHex(c) + WordToHex(d);
+    return temp.toLowerCase();
+}
 
-        for (var n = 0; n < str_data.length; n++) {
-            var c = str_data.charCodeAt(n);
-            if (c < 128) {
-                utftext += String.fromCharCode(c);
-            } else if((c > 127) && (c < 2048)) {
-                utftext += String.fromCharCode((c >> 6) | 192);
-                utftext += String.fromCharCode((c & 63) | 128);
-            } else {
-                utftext += String.fromCharCode((c >> 12) | 224);
-                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                utftext += String.fromCharCode((c & 63) | 128);
-            }
+function Utf8Encode(string) {
+    string = string.replace(/\r\n/g,'\n');
+    let utftext = '';
+    for (let n = 0; n < string.length; n++) {
+        const c = string.charCodeAt(n);
+        if (c < 128) {
+            utftext += String.fromCharCode(c);
         }
-
-        return utftext;
+        else if((c > 127) && (c < 2048)) {
+            utftext += String.fromCharCode((c >> 6) | 192);
+            utftext += String.fromCharCode((c & 63) | 128);
+        }
+        else {
+            utftext += String.fromCharCode((c >> 12) | 224);
+            utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+            utftext += String.fromCharCode((c & 63) | 128);
+        }
     }
+    return utftext;
+}; // Строка в любой кодировке как UTF-8
 
-    var temp = WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);
+/**
+ * Secure Hash Algorithm (SHA1)
+ **/
+function SHA1(msg) { let temp;
+
+    function rotate_left(n,s) {
+        return (n << s) | (n >>> (32 - s));
+    }
+    function cvt_hex(val) {
+        let str = '';
+        let i;
+        let v;
+        for( i=7; i>=0; i-- ) {
+            v = (val>>>(i*4))&0x0f;
+            str += v.toString(16);
+        }
+        return str;
+    };
+    let blockstart;
+    var i, j;
+    const W = new Array(80);
+    let H0 = 0x67452301; // Инициализация 5 слов по 32 бита (160)
+    let H1 = 0xEFCDAB89;
+    let H2 = 0x98BADCFE;
+    let H3 = 0x10325476;
+    let H4 = 0xC3D2E1F0;
+    let A, B, C, D, E;
+    msg = Utf8Encode(msg);
+    const msg_len = msg.length;
+    const word_array = [];
+    for( i=0; i<msg_len-3; i+=4 ) {
+        j = msg.charCodeAt(i)<<24 | msg.charCodeAt(i+1)<<16 |
+            msg.charCodeAt(i+2)<<8 | msg.charCodeAt(i+3);
+        word_array.push( j );
+    }
+    switch( msg_len % 4 ) {
+        case 0:
+            i = 0x080000000;
+            break;
+        case 1:
+            i = msg.charCodeAt(msg_len-1)<<24 | 0x0800000;
+            break;
+        case 2:
+            i = msg.charCodeAt(msg_len-2)<<24 | msg.charCodeAt(msg_len-1)<<16 | 0x08000;
+            break;
+        case 3:
+            i = msg.charCodeAt(msg_len-3)<<24 | msg.charCodeAt(msg_len-2)<<16 | msg.charCodeAt(msg_len-1)<<8 | 0x80;
+            break;
+    }
+    word_array.push( i );
+    while( (word_array.length % 16) !== 14 ) word_array.push( 0 ); // В общем дописываем в конец
+    word_array.push( msg_len>>>29 );
+    word_array.push( (msg_len<<3)&0x0ffffffff );
+    for ( blockstart=0; blockstart<word_array.length; blockstart+=16 ) { // Цикл из 80 операций на 512 бит сообщения
+        for( i=0; i<16; i++ ) W[i] = word_array[blockstart+i]; // слова исходного сообщения
+        for( i=16; i<=79; i++ ) W[i] = rotate_left(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
+        A = H0;
+        B = H1;
+        C = H2;
+        D = H3;
+        E = H4;
+        for( i= 0; i<=19; i++ ) {
+            temp = (rotate_left(A,5) + ((B&C) | (~B&D)) + E + W[i] + 0x5A827999) & 0x0ffffffff; // Kt для 0..19 = 0x5A827999 (константы)
+            E = D;
+            D = C;
+            C = rotate_left(B,30);
+            B = A;
+            A = temp;
+        }
+        for( i=20; i<=39; i++ ) {
+            temp = (rotate_left(A,5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B,30);
+            B = A;
+            A = temp;
+        }
+        for( i=40; i<=59; i++ ) {
+            temp = (rotate_left(A,5) + ((B&C) | (B&D) | (C&D)) + E + W[i] + 0x8F1BBCDC) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B,30);
+            B = A;
+            A = temp;
+        }
+        for( i=60; i<=79; i++ ) {
+            temp = (rotate_left(A,5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B,30);
+            B = A;
+            A = temp;
+        }
+        H0 = (H0 + A) & 0x0ffffffff;
+        H1 = (H1 + B) & 0x0ffffffff;
+        H2 = (H2 + C) & 0x0ffffffff;
+        H3 = (H3 + D) & 0x0ffffffff;
+        H4 = (H4 + E) & 0x0ffffffff;
+    }
+    temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
 
     return temp.toLowerCase();
 }

@@ -31,6 +31,8 @@
     <button class="btn waves-effect waves-light" onclick="labAlGamalButton()">Шифр Эль-Гамаля</button>
     <br><br>
     <button class="btn waves-effect waves-light" onclick="MD5Button()">MD5 Hash</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="SHAButton()">SHA Hash</button>
 </div>
 
 
@@ -61,6 +63,9 @@
     }
     function MD5Button() {
         ipcRenderer.send('MD5Open');
+    }
+    function SHAButton() {
+        ipcRenderer.send('SHAOpen');
     }
 </script>
 

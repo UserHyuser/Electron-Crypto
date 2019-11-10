@@ -12,6 +12,7 @@ let labDiffiHellmansub;
 let labShamir;
 let labAlGamal;
 let MD5;
+let SHA;
 
 function createWindow() {
 	// Create the browser window.
@@ -133,6 +134,23 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
+	const createSHA = () => {
+		SHA = new BrowserWindow({
+			width: 1060,
+			height: 600,
+			title: 'SHA Hash Prog',
+			webPreferences: {
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		});
+		SHA.loadFile('./pages/SHA.html');
+		mainWindow.hide();
+		SHA.on('close', function () {
+			SHA = 'null';
+			mainWindow.show();
+		});
+	};
 	ipcMain.on('lab1Open', function () {
 		createlab1Window();
 	});
@@ -161,6 +179,10 @@ function createWindow() {
 	});
 	ipcMain.on('MD5Open', function () {
 		createMD5();
+		mainWindow.hide();
+	});
+	ipcMain.on('SHAOpen', function () {
+		createSHA();
 		mainWindow.hide();
 	});
 	// and load the index.html of the app.
