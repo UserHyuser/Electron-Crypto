@@ -15,7 +15,8 @@ class cryptFunctions {
             let numbers = getPrimeNumbers(size);
             console.log(numbers)
             // Find g
-            q = BigInt(numbers.q); p = BigInt(numbers.p);
+            q = BigInt(numbers.q);
+            p = BigInt(numbers.p);
         }
         let g = 5n;
         while( fastDegreeModule(g,q,p) === 1n){
@@ -98,7 +99,6 @@ function fastDegreeModule(A,P,M) {
     let a = BigInt(A); let p = BigInt(P); let m = BigInt(M);
     let result = 1n;
     let arrayOfDegrees = countFactorOf2Degree(p).split(" ");
-    //console.log(arrayOfDegrees);
     let helpVar = (a * a) % m;
     let helpDegree = 2n;
     for (let i = arrayOfDegrees.length; i > 0; i--) {
@@ -109,12 +109,12 @@ function fastDegreeModule(A,P,M) {
                 helpVar = ((helpVar * helpVar)) % m;
                 helpDegree = helpDegree * 2n;
             }
-            // console.log(helpVar + " " + helpDegree)
+
             result = (result * helpVar) % m
 
         } else result = (result * degreeModule(a, BigInt(arrayOfDegrees[i - 1]), m)) % m;
     }
-    // return parseInt(result);
+
     return result;
 }
 
@@ -139,7 +139,7 @@ function RSAEncrypt(message, e, n){
     return c.join(' ');
 }
 
-/*RSA encryption
+/*RSA decryption
 * Message, hidden key e, open key n*/
 function RSADecrypt(message, d, n){
     n = BigInt(n);
@@ -161,6 +161,41 @@ function RSADecrypt(message, d, n){
         result[i] = unicodeToChar(parseInt(result[i]));
     }
     return result.join('');
+}
+
+/*Generate P, Q, N, E, D for RSA algorithm*/
+function bigNumbersGenerate(keysize, P, Q) {
+    let e = BigInt(65537);
+    let p = BigInt(P) || 0n;
+    let q = BigInt(Q) || 0n;
+    let eilerFunc;
+
+    if (!isNaN(parseInt(keysize))){
+        p = BigInt(randomPrime(keysize / 2));
+        q = BigInt(randomPrime(keysize / 2));
+        eilerFunc = (p-1n)*(q-1n);
+        if(NOD(e,eilerFunc) !== 1n){
+            do {
+                e = bigInt.randBetween(5n, eilerFunc - 1n)
+            } while (bigInt.gcd(e, eilerFunc).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
+        }
+    } else {
+        eilerFunc = (p-1n)*(q-1n)
+    }
+    // console.log({ d: getInverseElem(e,totient), totient, e})
+    return {
+        p,
+        q,
+        e,
+        n: p*q,
+        d: getInverseElem(e,eilerFunc),
+        eilerFunc
+    };
+}
+
+/*RSA digital signature*/
+function signatureRSA() {
+    
 }
 
 /*String to array of UTF8 codes*/
@@ -231,35 +266,6 @@ function NOD(a, b) {
         return a;
     }
     return NOD(b, a % b);
-}
-
-/*Generate P, Q, N, E, D for RSA algorithm*/
-function bigNumbersGenerate(keysize, P, Q) {
-    let e = BigInt(65537);
-    let p = BigInt(P) || 0;
-    let q = BigInt(Q) || 0;
-    let eilerFunc;
-
-    if (!isNaN(parseInt(keysize))){
-        p = BigInt(randomPrime(keysize / 2));
-        q = BigInt(randomPrime(keysize / 2));
-        eilerFunc = (p-1n)*(q-1n);
-        if(NOD(e,eilerFunc) !== 1n){
-            do {
-                e = bigInt.randBetween(5n, eilerFunc - 1n)
-            } while (bigInt.gcd(e, eilerFunc).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
-        }
-    } else {
-        eilerFunc = (p-1n)*(q-1n)
-    }
-    // console.log({ d: getInverseElem(e,totient), totient, e})
-    return {
-        p,
-        q,
-        e,
-        n: p*q,
-        d: getInverseElem(e,eilerFunc),
-    };
 }
 
 /*Generate a prime number

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>RSA алгоритм</title>
+</head>
+<body>
+<h1>RSA шифрование данных</h1>
+<div class="">
+	<label id="labelP">P:</label>
+	<input type="text" class="form-control" id="inputP" size="30">
+	<label id="labelQ">Q:</label>
+	<input type="text" class="form-control" id="inputQ" size="30">
+	<label id="labelSize"></label>
+	<input type="text" class="form-control" id="keysize" size="9" value="Размер ключа" onclick="clearInput('keysize')">
+	<button onclick="generate()">Сгенерировать</button>
+</div>
+<br>
+<div>
+	<label id="">Введите данные для шифрования</label>
+	<label id="labelE">E:</label>
+	<input type="text" class="form-control" id="inputE" size="30">
+	<label id="labelN">N:</label>
+	<input type="text" class="form-control" id="inputN" size="30">
+	<br>
+	<textarea cols="110" rows="5" id="message"></textarea>
+	<br>
+	<button onclick="encode()">Зашифровать</button>
+</div>
+<br>
+<div>
+	<label >Введите данные для расшифрования</label>
+	<label id="labelD">D:</label>
+	<input type="text" class="form-control" id="inputD" size="30">
+	<label id="labelN">N:</label>
+	<input type="text" class="form-control" id="inputN2" size="30">
+	<br>
+	<textarea cols="110" rows="5" id="cryptMessage"></textarea>
+	<br>
+	<button onclick="trustifySignature()">Расшифровать</button>
+</div>
+
+<script>
+	const electron = require('electron');
+	const {ipcRenderer} = electron;
+
+	function clearInput(id) {
+		document.getElementById(id).value = '';
+	}
+
+	let inputP = document.getElementById("inputP");
+	let inputQ = document.getElementById("inputQ");
+	let inputE = document.getElementById("inputE");
+	let inputD = document.getElementById("inputD");
+	let inputN = document.getElementById("inputN");
+	let inputN2 = document.getElementById("inputN2");
+	let keysize = document.getElementById("keysize");
+
+	function generate() {
+
+		// let keys = genKeys(inputP.value, inputQ.value);
+		keys = bigNumbersGenerate(keysize.value, inputP.value, inputQ.value);
+		inputP.value = keys.p;
+		inputQ.value = keys.q;
+		inputE.value = keys.e;
+		inputD.value = keys.d;
+		inputN.value = keys.n;
+		inputN2.value = keys.n;
+	}
+
+	let out = document.getElementById('cryptMessage');
+	let field = document.getElementById('message');
+
+	function encode() {
+
+		const hash = crypto.createHash('md5').update(field.value).digest('dec')
+		console.log(hash)
+
+		let digest = [];
+		for (let i = 0; i < hash.length; i++) { // Почему .map работает некорректно?
+			digest.push(fastDegreeModule(hash[i], inputD.value, inputN.value))
+		}
+
+		out.value = digest.join(' ');
+	}
+
+	function trustifySignature() {
+
+		const hash = crypto.createHash('md5').update(field.value).digest('dec')
+
+		const digest = out.value.split(' ');
+		const checkedDigest = [];
+		for (let i = 0; i < digest.length; i++) {
+
+			checkedDigest.push(fastDegreeModule(digest[i], inputE.value, inputN.value))
+		}
+		console.log(checkedDigest)
+		if(hash.join('') === checkedDigest.join('')) {
+			console.log('TRUSTED')
+		} else {
+			console.log('UNTRUSTED')
+		}
+		//out.value = RSADecrypt(field, document.getElementById("inputD").value, document.getElementById("inputN2").value);
+	}
+</script>
+<script src="../src/functions.js"></script>
+</body>
+</html>

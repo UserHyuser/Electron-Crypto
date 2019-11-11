@@ -20,7 +20,8 @@
   "author": "Nikita",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^6.0.9"
+    "electron": "^6.0.9",
+    "eslint": "^6.6.0"
   },
   "dependencies": {
     "big-integer": "^1.6.45"

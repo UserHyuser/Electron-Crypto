@@ -1,9 +1,8 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, Menu, ipcMain} = require('electron')
-const path = require('path')
+const {app, BrowserWindow, Menu, ipcMain} = require('electron');
+const path = require('path');
 const cryptFunc = require('./src/functions');
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
+
 let mainWindow;
 let lab1Window;
 let lab2Window;
@@ -13,6 +12,7 @@ let labShamir;
 let labAlGamal;
 let MD5;
 let SHA;
+let RSADigSig;
 
 function createWindow() {
 	// Create the browser window.
@@ -151,6 +151,25 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
+	const createRSADigSig = () => {
+		RSADigSig = new BrowserWindow({
+			width: 1060,
+			height: 600,
+			title: 'RSA Digital Signature',
+			webPreferences: {
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		});
+		RSADigSig.loadFile('./pages/RSA_digital_signature.html');
+		mainWindow.hide();
+		RSADigSig.on('close', function () {
+			RSADigSig = 'null';
+			mainWindow.show();
+		});
+	};
+
+
 	ipcMain.on('lab1Open', function () {
 		createlab1Window();
 	});
@@ -183,6 +202,10 @@ function createWindow() {
 	});
 	ipcMain.on('SHAOpen', function () {
 		createSHA();
+		mainWindow.hide();
+	});
+	ipcMain.on('RSADigSigOpen', function () {
+		createRSADigSig();
 		mainWindow.hide();
 	});
 	// and load the index.html of the app.
