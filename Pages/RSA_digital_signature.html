@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>RSA алгоритм</title>
+	<title>RSA цифровая подпись</title>
+	<style>.flash_red { background-color: red; } .flash_green { background-color: limegreen; }</style>
 </head>
 <body>
-<h1>RSA шифрование данных</h1>
+<h1>RSA цифровая подпись</h1>
 <div class="">
 	<label id="labelP">P:</label>
 	<input type="text" class="form-control" id="inputP" size="30">
@@ -17,27 +18,28 @@
 </div>
 <br>
 <div>
-	<label id="">Введите данные для шифрования</label>
-	<label id="labelE">E:</label>
-	<input type="text" class="form-control" id="inputE" size="30">
+	<label id="">Введите сообщение </label>
+	<label id="labelD">D:</label>
+	<input type="text" class="form-control" id="inputD" size="30">
 	<label id="labelN">N:</label>
 	<input type="text" class="form-control" id="inputN" size="30">
 	<br>
 	<textarea cols="110" rows="5" id="message"></textarea>
 	<br>
-	<button onclick="encode()">Зашифровать</button>
+	<button onclick="encode()">Сгенерировать ЭП</button>
 </div>
 <br>
 <div>
-	<label >Введите данные для расшифрования</label>
-	<label id="labelD">D:</label>
-	<input type="text" class="form-control" id="inputD" size="30">
+	<label >Введите данные для проверки ЭП </label>
+
+	<label id="labelE">E:</label>
+	<input type="text" class="form-control" id="inputE" size="30">
 	<label id="labelN">N:</label>
 	<input type="text" class="form-control" id="inputN2" size="30">
 	<br>
 	<textarea cols="110" rows="5" id="cryptMessage"></textarea>
 	<br>
-	<button onclick="trustifySignature()">Расшифровать</button>
+	<button onclick="trustifySignature()">Проверить цифровую подпись</button>
 </div>
 
 <script>
@@ -96,11 +98,16 @@
 		}
 		console.log(checkedDigest)
 		if(hash.join('') === checkedDigest.join('')) {
-			console.log('TRUSTED')
+			field.classList.add('flash_green')
+			setTimeout(function(){
+				field.classList.remove('flash_green');
+			}, 2000);
 		} else {
-			console.log('UNTRUSTED')
+			field.classList.add('flash_red');
+			setTimeout(function(){
+				field.classList.remove('flash_red');
+			}, 2000);
 		}
-		//out.value = RSADecrypt(field, document.getElementById("inputD").value, document.getElementById("inputN2").value);
 	}
 </script>
 <script src="../src/functions.js"></script>
