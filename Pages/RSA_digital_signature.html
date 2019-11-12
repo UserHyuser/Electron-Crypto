@@ -73,31 +73,21 @@
 	let out = document.getElementById('cryptMessage');
 	let field = document.getElementById('message');
 
+	/*Create a signature*/
 	function encode() {
 
-		const hash = crypto.createHash('md5').update(field.value).digest('dec')
-		console.log(hash)
+		const hash = crypto.createHash('md5').update(field.value).digest('dec');
 
-		let digest = [];
-		for (let i = 0; i < hash.length; i++) { // Почему .map работает некорректно?
-			digest.push(fastDegreeModule(hash[i], inputD.value, inputN.value))
-		}
-
-		out.value = digest.join(' ');
+		out.value = fastDegreeModule(BigInt(hash.join('')), inputD.value, inputN.value); // Digest
 	}
 
 	function trustifySignature() {
 
 		const hash = crypto.createHash('md5').update(field.value).digest('dec')
 
-		const digest = out.value.split(' ');
-		const checkedDigest = [];
-		for (let i = 0; i < digest.length; i++) {
+		const checkedDigest = fastDegreeModule(BigInt(out.value), inputE.value, inputN.value)
 
-			checkedDigest.push(fastDegreeModule(digest[i], inputE.value, inputN.value))
-		}
-		console.log(checkedDigest)
-		if(hash.join('') === checkedDigest.join('')) {
+		if(hash.join('') === checkedDigest.toString()) {
 			field.classList.add('flash_green')
 			setTimeout(function(){
 				field.classList.remove('flash_green');

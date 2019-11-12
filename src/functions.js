@@ -1,6 +1,6 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
+/*
+* There are a lot of crypto functions: crypto algorithms and accessory functions
+*/
 const bigInt = require('big-integer');
 const crypto = require('crypto');
 /*Class of functions for export them to main.js*/
@@ -93,6 +93,10 @@ class cryptFunctions {
 }
 module.exports = cryptFunctions;
 
+/*
+* Construction BigInt(bigInt().toString()) is used for correct convert from bigInt (a module) to a native BigInt JS type
+* */
+
 /*A - base, P - power, M - module
 * returns (A ** P) mod M for any numbers*/
 function fastDegreeModule(A,P,M) {
@@ -176,13 +180,13 @@ function bigNumbersGenerate(keysize, P, Q) {
         eilerFunc = (p-1n)*(q-1n);
         if(NOD(e,eilerFunc) !== 1n){
             do {
-                e = bigInt.randBetween(5n, eilerFunc - 1n)
+                e = bigInt.randBetween(5n, eilerFunc - 1n) // Использую bigInt для randBetween
             } while (bigInt.gcd(e, eilerFunc).notEquals(1)); // Пока НОД е, и "числа Эйлера" !== 1 или || p.minus(q).abs().shiftRight(keysize / 2 - 100).isZero()
         }
     } else {
         eilerFunc = (p-1n)*(q-1n)
     }
-    // console.log({ d: getInverseElem(e,totient), totient, e})
+
     return {
         p,
         q,
@@ -191,11 +195,6 @@ function bigNumbersGenerate(keysize, P, Q) {
         d: getInverseElem(e,eilerFunc),
         eilerFunc
     };
-}
-
-/*RSA digital signature*/
-function signatureRSA() {
-    
 }
 
 /*String to array of UTF8 codes*/
@@ -293,7 +292,7 @@ function getPrimeNumbers(deg) { // указывается степень
     while (true) {
         q = (bigInt.randBetween(min, max)).toString();
         if (SolovayStrassenTest(q.toString(),32)) {
-            p = (bigInt(2n*BigInt(q) + 1n)).toString();
+            p = (2n*BigInt(q) + 1n).toString();
             if (SolovayStrassenTest(p.toString(),32)){ // Почему-то нужно передавать как строку BigInt не работает
                 return {p, q}
             }
@@ -306,7 +305,6 @@ function getPrimeNumbers(deg) { // указывается степень
 * This function uses a secure generation of bytes with 'crypto' object*/
 function getPrimeNumbersBits(bits) { // У p-1 будет большой простой делитель
 
-    // console.time('gen')
     let q,p;
     while (true) {
         q = BigInt('0x' + crypto.randomBytes(~~(bits/8)).toString('hex'));
