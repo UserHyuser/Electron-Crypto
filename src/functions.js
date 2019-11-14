@@ -20,7 +20,7 @@ class cryptFunctions {
         }
         let g = 5n;
         while( fastDegreeModule(g,q,p) === 1n){
-            g = BigInt(bigInt.randBetween(1, (p-1n).toString()))
+            g = BigInt(bigInt.randBetween(1, (p-1n)).toString())
         }
 
         // first client
@@ -102,7 +102,6 @@ module.exports = cryptFunctions;
 function fastDegreeModule(A,P,M) {
     let a = BigInt(A); let p = BigInt(P); let m = BigInt(M);
     let result = 1n;
-    // console.log({p, sec: countFactorOf2Degree(p)})
     let arrayOfDegrees = countFactorOf2Degree(p).split(" ");
     let helpVar = (a * a) % m;
     let helpDegree = 2n;
@@ -110,6 +109,7 @@ function fastDegreeModule(A,P,M) {
 
         // Возведение в степень по модулю
         if (arrayOfDegrees[i - 1] !== "" && arrayOfDegrees[i - 1] !== '1' && arrayOfDegrees[i - 1] !== '0') {
+
             while (helpDegree.toString() !== arrayOfDegrees[i - 1]) {
                 helpVar = ((helpVar * helpVar)) % m;
                 helpDegree = helpDegree * 2n;
@@ -898,7 +898,6 @@ function generateFIPS() {
         pseed += iteration + 1n;
         a = 2n + (a % (p - 3n));
         let z = fastDegreeModule(a, (2n * t *q), p);
-
         if((NOD(z - 1n, p) === 1n) && ((fastDegreeModule(z, p0, p) === 1n))){
             return {p, q}
         }
@@ -922,11 +921,6 @@ function ST_Random_Prime(length, input_seed, outlen) {
     if (length < 2n) return false
     if (length >= 33n){
         let ST_prime = ST_Random_Prime(ceil(length / 2n) + 1n, input_seed, outlen);
-        if (ST_prime === false) {
-            console.log("FALSE!")
-            return false
-        }
-
         let c0 = ST_prime.prime;
         prime_seed = ST_prime.prime_seed;
         prime_gen_counter = ST_prime.prime_gen_counter;
@@ -957,7 +951,6 @@ function ST_Random_Prime(length, input_seed, outlen) {
         a = 2n + (a % (c - 3n))
 
         let z = fastDegreeModule(a, 2n * t, c);
-        //console.log(z)
         if((NOD(z - 1n, c) === 1n) && fastDegreeModule(z, c0, c) === 1n){
             return {prime: c, prime_seed, prime_gen_counter}
         }
@@ -992,6 +985,29 @@ function ST_Random_Prime(length, input_seed, outlen) {
             return false
         }
     }
+}
+
+/* Find generator for field Zp from q and p
+* with partial validate*/
+function generatorForFIPS(q,p) {
+    q = BigInt(q);
+    p = BigInt(p);
+
+    let e = (p-1n)/q;
+    let size = bigInt.randBetween(2, 127); // Size of p
+    let h = 0n;
+    let g = 1n;
+
+    while (g === 1n){
+        h = BigInt('0x' + crypto.randomBytes(Number(size)).toString('hex'));
+        g = fastDegreeModule(h,e,p)
+    }
+    if(fastDegreeModule(g,q,p) === 1n){
+        return g
+    } else{
+        return generatorForFIPS(q,p)
+    }
+
 }
 
 /*Returns length of number in bits*/
