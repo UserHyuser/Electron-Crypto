@@ -9,10 +9,11 @@ let lab2Window;
 let labDiffiHellman;
 let labDiffiHellmansub;
 let labShamir;
-let labAlGamal;
+let labElGamal;
 let MD5;
 let SHA;
 let RSADigSig;
+let ElGamalDigSig;
 
 function createWindow() {
 	// Create the browser window.
@@ -100,8 +101,8 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
-	const createlabAlGamal = () => {
-		labAlGamal = new BrowserWindow({
+	const createlabElGamal = () => {
+		labElGamal = new BrowserWindow({
 			width: 1060,
 			height: 600,
 			title: 'Шифр Эль-Гамаля',
@@ -110,10 +111,10 @@ function createWindow() {
 				nodeIntegrationInWorker: true
 			}
 		});
-		labAlGamal.loadFile('./pages/labAlGamal.html');
+		labElGamal.loadFile('./pages/labElGamal.html');
 		mainWindow.hide();
-		labAlGamal.on('close', function () {
-			labAlGamal = 'null';
+		labElGamal.on('close', function () {
+			labElGamal = 'null';
 			mainWindow.show();
 		});
 	};
@@ -168,6 +169,23 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
+	const createElGamalDigSig = () => {
+		ElGamalDigSig = new BrowserWindow({
+			width: 1060,
+			height: 600,
+			title: 'ElGamal Digital Signature',
+			webPreferences: {
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		});
+		ElGamalDigSig.loadFile('./pages/ElGamal_digital_signature.html');
+		mainWindow.hide();
+		ElGamalDigSig.on('close', function () {
+			ElGamalDigSig = 'null';
+			mainWindow.show();
+		});
+	};
 
 
 	ipcMain.on('lab1Open', function () {
@@ -192,8 +210,8 @@ function createWindow() {
 		createlabShamir();
 		mainWindow.hide();
 	});
-	ipcMain.on('labAlGamalOpen', function () {
-		createlabAlGamal();
+	ipcMain.on('labElGamalOpen', function () {
+		createlabElGamal();
 		mainWindow.hide();
 	});
 	ipcMain.on('MD5Open', function () {
@@ -208,6 +226,11 @@ function createWindow() {
 		createRSADigSig();
 		mainWindow.hide();
 	});
+	ipcMain.on('ElGamalDigSigOpen', function () {
+		createElGamalDigSig();
+		mainWindow.hide();
+	});
+
 	// and load the index.html of the app.
 	mainWindow.loadFile('index.html');
 	// Menu.setApplicationMenu(null);

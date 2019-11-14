@@ -39,7 +39,7 @@ class cryptFunctions {
         return {q: q.toString(), p: p.toString(), g: g.toString(), Xa, Ya: Ya.toString(), Xb, Yb: Yb.toString(), Zab: Zab.toString(), Zba: Zba.toString()}
     }
 
-    static AlGamal(message, size, P, G, C1, C2, D1, D2) {
+    static ElGamal(message, size, P, G, C1, C2, D1, D2) {
         let p = BigInt(P) || BigInt(randomPrime(size).toString()); // Открытые
         let g = BigInt(G) || 3n;
         while (NOD(g, p-1n) !== 1n){
@@ -73,7 +73,7 @@ class cryptFunctions {
         return {p,g,c1,c2,d1,d2,cipher,decipher};
     }
 
-    static AlGamalGenerate(size, P, G, C1, C2, D1, D2) {
+    static ElGamalGenerate(size, P, G, C1, C2, D1, D2) {
         let p = BigInt(P || BigInt(randomPrime(size).toString())); // Открытые
         let g = BigInt(G || 3n);
         while (NOD(g, p-1n) !== 1n){
@@ -417,7 +417,7 @@ function DiffiHellman(P,Q, size){
 
 /*An Al Gamal algorithm in 3 functions
 * Encrypt and Decrypt functions return strings */
-function AlGamalEncrypt(message, P, D2, G) {
+function ElGamalEncrypt(message, P, D2, G) {
     let p = BigInt(P);
     let g = BigInt(G);
     //Вычисляем Db
@@ -427,6 +427,7 @@ function AlGamalEncrypt(message, P, D2, G) {
     // Шифрование
     let cipher = asUTF8Codes(message).split(" ");
 	let rArray = [];
+
     for (let i = 0; i < cipher.length; i++){
     	k = BigInt(bigInt.randBetween(1, (p-1n).toString()));
     	rArray.push(fastDegreeModule(g, k, p));
@@ -436,7 +437,7 @@ function AlGamalEncrypt(message, P, D2, G) {
     return {cipher:cipher.join(' '), rArray: rArray.join(' ')};
 }
 
-function AlGamalDecrypt(message, P, C2, R) {
+function ElGamalDecrypt(message, P, C2, R) {
     let p = BigInt(P);
     // 2 числа Ci
     let c2 = BigInt(C2);
@@ -454,7 +455,7 @@ function AlGamalDecrypt(message, P, C2, R) {
     return decipher;
 }
 
-function AlGamalGenerate(size, P) { // При P слишком малом может не хватить мощности алфавита для символов Unicode
+function ElGamalGenerate(size, P) { // При P слишком малом может не хватить мощности алфавита для символов Unicode
     let p;
     if (!size){
         p = BigInt(P || BigInt(randomPrime(size).toString())); // Открытые
@@ -467,9 +468,9 @@ function AlGamalGenerate(size, P) { // При P слишком малом мож
     }
     // 2 числа Ci
     // Абонент А выбирает случайное число k и вычисляет из него r, e
-    let c2 = BigInt(bigInt.randBetween(1, (p-1n).toString()));
+    let c2 = BigInt(bigInt.randBetween(1, (p-1n)).toString()); // Закрытый ключ
     //Вычисляем Di
-    let d2 = fastDegreeModule(g, c2, p);
+    let d2 = fastDegreeModule(g, c2, p); // Открытый
     return {p,g,c2,d2};
 }
 
@@ -733,6 +734,7 @@ function SHA1(msg) { let temp;
     function rotate_left(n,s) {
         return (n << s) | (n >>> (32 - s));
     }
+
     function cvt_hex(val) {
         let str = '';
         let i;
@@ -755,10 +757,10 @@ function SHA1(msg) { let temp;
     msg = Utf8Encode(msg);
     const msg_len = msg.length;
     const word_array = [];
-    for( i=0; i<msg_len-3; i+=4 ) {
-        j = msg.charCodeAt(i)<<24 | msg.charCodeAt(i+1)<<16 |
-            msg.charCodeAt(i+2)<<8 | msg.charCodeAt(i+3);
-        word_array.push( j );
+    for (i = 0; i < msg_len - 3; i += 4) {
+        j = msg.charCodeAt(i) << 24 | msg.charCodeAt(i + 1) << 16 |
+            msg.charCodeAt(i + 2) << 8 | msg.charCodeAt(i + 3);
+        word_array.push(j);
     }
     switch( msg_len % 4 ) {
         case 0:
@@ -774,10 +776,12 @@ function SHA1(msg) { let temp;
             i = msg.charCodeAt(msg_len-3)<<24 | msg.charCodeAt(msg_len-2)<<16 | msg.charCodeAt(msg_len-1)<<8 | 0x80;
             break;
     }
+
     word_array.push( i );
     while( (word_array.length % 16) !== 14 ) word_array.push( 0 ); // В общем дописываем в конец
     word_array.push( msg_len>>>29 );
     word_array.push( (msg_len<<3)&0x0ffffffff );
+
     for ( blockstart=0; blockstart<word_array.length; blockstart+=16 ) { // Цикл из 80 операций на 512 бит сообщения
         for( i=0; i<16; i++ ) W[i] = word_array[blockstart+i]; // слова исходного сообщения
         for( i=16; i<=79; i++ ) W[i] = rotate_left(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);

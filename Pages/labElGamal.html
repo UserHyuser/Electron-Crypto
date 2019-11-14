@@ -50,6 +50,7 @@
     let inputP = document.getElementById("inputP");
     let inputC2 = document.getElementById("inputC2");
     let inputD2 = document.getElementById("inputD2");
+    let inputG1 = document.getElementById("inputG1");
     let keysize = document.getElementById("keysize");
 
     function clearInput(id) {
@@ -58,7 +59,7 @@
     }
     
     function generate() {
-        let keys = AlGamalGenerate(keysize.value, inputP.value)
+        let keys = ElGamalGenerate(keysize.value, inputP.value)
         inputP.value = keys.p;
         inputG1.value = keys.g;
         inputC2.value = keys.c2;
@@ -67,14 +68,14 @@
     }
     function encode() {
         let message = document.getElementById("message").value;
-	    let tmp = AlGamalEncrypt(message, inputP.value, inputD2.value, inputG1.value)
+	    let tmp = ElGamalEncrypt(message, inputP.value, inputD2.value, inputG1.value)
         document.getElementById("cryptMessage").value = tmp.cipher;
 	    document.getElementById("inputR").value = tmp.rArray;
     }
     function decode() {
         let message = document.getElementById("cryptMessage").value;
         let rArray =  document.getElementById("inputR").value;
-        document.getElementById("message").value = AlGamalDecrypt(message, inputP.value, inputC2.value, rArray)
+        document.getElementById("message").value = ElGamalDecrypt(message, inputP.value, inputC2.value, rArray)
     }
 
 </script>

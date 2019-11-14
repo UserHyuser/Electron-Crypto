@@ -12,10 +12,13 @@ Stack: Node.js, Electron
 5. MD5 hash algorithm
 6. SHA-1 hash algorithm
 7. RSA digital signature algorithm
+8. ElGamal digital signature algorithm
 
 ## About program
-1. ./src/function - Main file with implementation of main crypto functions 
-2. index.html - Main page of Electron app
-3. ./Pages/ -  Contains pages of app with different algorithms 
+1. You can calculate hash and digital signature both to text and files (drag and drop file to form)
+2. ./src/function - Main file with implementation of main crypto functions 
+3. index.html - Main page of Electron app
+4. ./Pages/ -  Contains pages of app with different algorithms 
+ 
 
 
