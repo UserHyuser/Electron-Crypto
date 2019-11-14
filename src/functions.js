@@ -102,6 +102,7 @@ module.exports = cryptFunctions;
 function fastDegreeModule(A,P,M) {
     let a = BigInt(A); let p = BigInt(P); let m = BigInt(M);
     let result = 1n;
+    // console.log({p, sec: countFactorOf2Degree(p)})
     let arrayOfDegrees = countFactorOf2Degree(p).split(" ");
     let helpVar = (a * a) % m;
     let helpDegree = 2n;
@@ -214,6 +215,7 @@ function unicodeToChar(text) {
 /*Factorize number to sum of degrees of 2
 * returns a string like "2 4 8" for 14 */
 function countFactorOf2Degree(num) {
+    //if(num == 0) return "0";
     let tmp = 1n;
     if (num === 0n) {
         return 0n
@@ -832,3 +834,174 @@ function SHA1(msg) { let temp;
 
     return temp.toLowerCase();
 }
+
+/* Digital signature standard FIPS 186
+* returns p: 1024 bits; q: 160 bits
+* p and q both are prime
+* uses Shawe-Taylor Random_Prime algorithm
+* */
+function generateFIPS() {
+
+    let L = 1024n;
+    let N = 160n;
+    let firstseed = 0n;
+    let outlen = 160n; // Length of q (size of a hash block)
+
+    (function () { // Gen first seed
+        let seedlen = N + 10n;
+        while (firstseed < 2n**(N-1n)){
+            firstseed = BigInt('0x' + crypto.randomBytes(Number(seedlen / 8n)).toString('hex'));
+        }
+    }());
+
+    /* Use a safe generate of prime number */
+
+    let prime_ST = ST_Random_Prime(N, firstseed, outlen);
+    if(prime_ST === false) return false;
+    let q = prime_ST.prime;
+    let qseed = prime_ST.prime_seed;
+    let qgen_counter = prime_ST.prime_gen_counter;
+    // console.log(prime_ST)
+
+    let prime_ST2 = ST_Random_Prime(ceil((L/2n) + 1n), qseed, outlen);
+    if(prime_ST2 === false) return false;
+    let p0 = prime_ST2.prime;
+    let pseed = prime_ST2.prime_seed;
+    let pgen_counter = prime_ST2.prime_gen_counter;
+    // console.log(prime_ST2)
+
+    let iteration = ceil(L / outlen) - 1n;
+
+    let old_counter = pgen_counter;
+    let x = 0n;
+    for (let i = 0n; i < iteration; i++) {
+        x += BigInt('0x' + crypto.createHash('SHA1').update((pseed + i).toString()).digest('hex')) * 2n ** (i * outlen);
+    }
+
+    pseed += iteration + 1n;
+    x = (2n ** (L - 1n)) + (x % (2n ** (L - 1n)));
+
+    let t = ceil(x / (2n * q * p0));
+
+    while (true){
+        if(((2n * t * q * p0) + 1n) > 2n ** L) {
+            t = ceil((2n ** (L - 1n) / (2n * q * p0)))
+        }
+        let p = 2n * t * q * p0 + 1n;
+
+        pgen_counter++;
+        let a = 0n;
+        for (let i = 0n; i < iteration; i++) {
+            a += BigInt('0x' + crypto.createHash('SHA1').update((pseed + i).toString()).digest('hex')) * 2n ** (i * outlen);
+        }
+
+        pseed += iteration + 1n;
+        a = 2n + (a % (p - 3n));
+        let z = fastDegreeModule(a, (2n * t *q), p);
+
+        if((NOD(z - 1n, p) === 1n) && ((fastDegreeModule(z, p0, p) === 1n))){
+            return {p, q}
+        }
+
+        if(pgen_counter > (4n * L + old_counter)){
+            return false;
+        }
+        t++;
+    }
+}
+
+/*Shawe-Taylor Random_Prime Routine
+* preudocode on: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf */
+function ST_Random_Prime(length, input_seed, outlen) {
+    length = BigInt(length);
+    // console.log({length, input_seed})
+    input_seed = BigInt(input_seed);
+    let prime_seed = input_seed;
+    let prime_gen_counter = 0n;
+
+    if (length < 2n) return false
+    if (length >= 33n){
+        let ST_prime = ST_Random_Prime(ceil(length / 2n) + 1n, input_seed, outlen);
+        if (ST_prime === false) {
+            console.log("FALSE!")
+            return false
+        }
+
+        let c0 = ST_prime.prime;
+        prime_seed = ST_prime.prime_seed;
+        prime_gen_counter = ST_prime.prime_gen_counter;
+        let old_counter = prime_gen_counter;
+
+        let iterations = ceil(length / outlen) - 1n;
+
+        let x = 0n;
+        for (let i = 0n; i < iterations; i++) {
+            x +=  BigInt('0x' + crypto.createHash('SHA1').update((prime_seed + i).toString()).digest('hex')) * (2n ** (i * outlen))
+        }
+        prime_seed += iterations + 1n;
+        x = (2n ** (length - 1n)) + (x % (2n ** (length - 1n)));
+
+        let t = ceil(x / (2n * c0))
+
+        if(2n * t * c0 + 1n > 2n ** length){
+            t = ceil(2n ** (length - 1n) / (2n*c0))
+        }
+        let c = 2n * t * c0 + 1n;
+        prime_gen_counter++;
+
+        let a = 0n;
+        for (let i = 0n; i < iterations; i++) {
+            a += BigInt('0x' + crypto.createHash('SHA1').update((prime_seed + i).toString()).digest('hex')) * (2n ** (i*outlen))
+        }
+        prime_seed += iterations + 1n;
+        a = 2n + (a % (c - 3n))
+
+        let z = fastDegreeModule(a, 2n * t, c);
+        //console.log(z)
+        if((NOD(z - 1n, c) === 1n) && fastDegreeModule(z, c0, c) === 1n){
+            return {prime: c, prime_seed, prime_gen_counter}
+        }
+
+        if(prime_gen_counter >= (4n * length) + old_counter){
+            return false
+        }
+    }
+
+    let c = 4n;
+    while(true){
+
+        c = BigInt(bigInt(crypto.createHash('SHA1').update(prime_seed.toString()).digest('hex'), 16)
+            .xor(bigInt(crypto.createHash('SHA1').update((prime_seed + 1n).toString()).digest('hex'), 16)).toString());
+        /*console.log(bigInt(crypto.createHash('SHA1').update(prime_seed.toString()).digest('hex'), 16)
+            .xor(bigInt(crypto.createHash('SHA1').update((prime_seed + 1n).toString()).digest('hex'), 16)))*/
+        // c = BigInt('0x' + crypto.createHash('SHA1').update(prime_seed.toString()).digest('hex'));
+        // console.log({c, prime_seed})
+        c = (2n ** (length - 1n)) + (c % (2n ** (length - 1n)));
+        c = (2n * ~~(c/2n)) + 1n;
+
+
+        prime_gen_counter++;
+        prime_seed += 2n;
+
+        //console.log({c, prime_seed, prime_gen_counter})
+
+        if(SolovayStrassenTest(c, 100)) {
+            return {prime: c, prime_seed, prime_gen_counter}
+        }
+        if(prime_gen_counter > (4n * length)){
+            return false
+        }
+    }
+}
+
+/*Returns length of number in bits*/
+function getLength(num) {
+    return num.toString(2).length;
+}
+
+/*Round for next integer Just because Math.ceil doesn't work for BigInt */
+function ceil(num) {
+    if(~~(num) === num) return num;
+    else return (~~num) + 1n;
+}
+

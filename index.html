@@ -37,6 +37,8 @@
     <button class="btn waves-effect waves-light" onclick="RSADigSigButton()">ЭП на алгоритме RSA</button>
     <br><br>
     <button class="btn waves-effect waves-light" onclick="ElGamalDigSigButton()">ЭП на алгоритме Эль-Гамаля</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="FIPSDigSigButton()">ЭП стандарт FIPS</button>
 </div>
 
 
@@ -76,6 +78,9 @@
     }
     function ElGamalDigSigButton() {
         ipcRenderer.send('ElGamalDigSigOpen');
+    }
+    function FIPSDigSigButton() {
+        ipcRenderer.send('FIPSDigSigOpen');
     }
 </script>
 

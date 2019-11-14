@@ -14,6 +14,7 @@ let MD5;
 let SHA;
 let RSADigSig;
 let ElGamalDigSig;
+let FIPSDigSig;
 
 function createWindow() {
 	// Create the browser window.
@@ -186,6 +187,23 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
+	const createFIPSDigSig = () => {
+		FIPSDigSig = new BrowserWindow({
+			width: 1060,
+			height: 600,
+			title: 'FIPS 186 standard Digital Signature',
+			webPreferences: {
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		});
+		FIPSDigSig.loadFile('./pages/FIPS_186_digital_signature.html');
+		mainWindow.hide();
+		FIPSDigSig.on('close', function () {
+			FIPSDigSig = 'null';
+			mainWindow.show();
+		});
+	};
 
 
 	ipcMain.on('lab1Open', function () {
@@ -228,6 +246,10 @@ function createWindow() {
 	});
 	ipcMain.on('ElGamalDigSigOpen', function () {
 		createElGamalDigSig();
+		mainWindow.hide();
+	});
+	ipcMain.on('FIPSDigSigOpen', function () {
+		createFIPSDigSig();
 		mainWindow.hide();
 	});
 

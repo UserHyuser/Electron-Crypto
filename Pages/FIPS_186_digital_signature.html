@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Цифровая подпись на базе шифра Эль-Гамаля</title>
+	<style>.flash_red { background-color: red; } .flash_green { background-color: limegreen; }</style>
+</head>
+<body>
+<h1>Цифровая подпись на базе шифра Эль-Гамаля</h1>
+<div class="">
+	<label id="labelQ">Q:</label>
+	<input type="text" class="form-control" id="inputQ" size="40">
+	<label id="labelP">P:</label>
+	<input type="text" class="form-control" id="inputP" size="91">
+	<label id="labelSize"></label>
+	<input type="text" class="form-control" id="keysize" size="9" value="Размер ключа" onclick="clearInput('keysize')">
+	<button onclick="generate()">Сгенерировать</button>
+</div>
+<br>
+<div>
+	<label id="labelG">G:</label>
+	<input type="text" class="form-control" id="inputG" size="40">
+	<label id="labelC">C:</label>
+	<input type="text" class="form-control" id="inputC2" size="40">
+	<br>
+	<label id="">Введите сообщение </label>
+	<label id="labelD">D:</label>
+	<input type="text" class="form-control" id="inputD" size="30">
+	<br>
+	<textarea cols="110" rows="5" id="message"></textarea>
+	<br>
+	<button onclick="encode()">Сгенерировать ЭП</button>
+</div>
+<br>
+<div>
+	<label >Введите данные для проверки ЭП </label>
+	<br>
+	<label id="labelR">R:</label>
+	<input type="text" class="form-control" id="inputR" size="100">
+	<br>
+	<label id="labelS">S:</label>
+	<input type="text" class="form-control" id="inputS" size="100">
+	<br>
+	<button onclick="trustifySignature()">Проверить цифровую подпись</button>
+</div>
+
+<script>
+	const electron = require('electron');
+	const {ipcRenderer} = electron;
+	const fs = require('fs');
+
+	function clearInput(id) {
+		document.getElementById(id).value = '';
+	}
+
+	const inputP = document.getElementById("inputP");
+	const inputC2 = document.getElementById("inputC2");
+	const inputD = document.getElementById("inputD");
+	const inputG = document.getElementById("inputG");
+	const inputR = document.getElementById("inputR");
+	const inputS = document.getElementById("inputS");
+	const keysize = document.getElementById("keysize");
+
+	let flagFile = {
+		flag:false,
+		path: ''
+	}
+
+	function generate() {
+		// q - 160 бит p - 1024
+		let keys = ElGamalGenerate(inputP.value, inputQ.value)
+		inputP.value = keys.p;
+		inputG.value = keys.g;
+		inputC2.value = keys.c2; // Закрытый
+		inputD.value = keys.d2; // Открытый
+		console.table(keys);
+	}
+
+	let message = document.getElementById('message');
+
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		message.addEventListener(eventName, preventDefaults, false)
+	});
+
+	function preventDefaults (e) {
+		e.preventDefault()
+		e.stopPropagation()
+	}
+
+	message.ondrop = (e) =>{
+		e.preventDefault();
+		flagFile.path = e.dataTransfer.files[0].path;
+		message.value = flagFile.path;
+		flagFile.flag = true;
+		return false;
+	};
+
+	/*Create a signature*/
+	async function encode() {
+		let p = BigInt(inputP.value);
+		let c = BigInt(inputC2.value);
+		let g = BigInt(inputG.value);
+		let u;
+		let s;
+		let hash;
+		let k = 0n;
+		let size = (keysize.value / 8) - 1 || (p.toString().length / 8) - 1;
+		while (NOD(k, p - 1n) !== 1n) {
+			k = BigInt('0x' + crypto.randomBytes(~~(size)).toString('hex'));
+		}
+		let r = fastDegreeModule(g, k, p);
+
+		const findHash = new Promise((resolve) => {
+			if (flagFile.flag) {
+				fs.readFile(message.value, function (err, data) {
+					if (err) throw err;
+					resolve(BigInt('0x' + crypto.createHash('md5').update(data).digest('hex')));
+				});
+			} else {
+				resolve(BigInt('0x' + crypto.createHash('md5').update(message.value).digest('hex')));
+			}
+		});
+
+		hash = await findHash;
+
+		u = (fastDegreeModule((hash - (c * r)), 1, p - 1n) + (p - 1n)) % (p - 1n);
+		s = (getInverseElem(k, p - 1n) * u) % (p - 1n);
+		console.table({hash, u, s, r, k, p});
+		inputR.value = r;
+		inputS.value = s;
+	}
+
+	async function trustifySignature() {
+		let checkedDigest;
+		let p = BigInt(inputP.value);
+		let g = BigInt(inputG.value);
+		let r = BigInt(inputR.value);
+		let d = BigInt(inputD.value);
+		let s = BigInt(inputS.value);
+
+		const findHash = new Promise((resolve) =>{
+			if (flagFile.flag) {
+				fs.readFile(message.value, function (err, data) {
+					if (err) throw err;
+					resolve(BigInt('0x' + crypto.createHash('md5').update(data).digest('hex')));
+				});
+			} else {
+				resolve(BigInt('0x' + crypto.createHash('md5').update(message.value).digest('hex')));
+			}
+		});
+
+		let hash = await findHash;
+		checkedDigest = (fastDegreeModule(d, r, p) * fastDegreeModule(r,s, p)) % p;
+
+		if (fastDegreeModule(g, hash, p) === checkedDigest) {
+			message.classList.add('flash_green');
+			setTimeout(function () {
+				message.classList.remove('flash_green');
+			}, 2000);
+		} else {
+			message.classList.add('flash_red');
+			setTimeout(function () {
+				message.classList.remove('flash_red');
+			}, 2000);
+		}
+		flagFile.flag = false;
+	}
+</script>
+<script src="../src/functions.js"></script>
+</body>
+</html>
