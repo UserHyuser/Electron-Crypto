@@ -910,7 +910,7 @@ function generateFIPS() {
     }
 }
 
-/*Shawe-Taylor Random_Prime Routine
+/* Shawe-Taylor Random_Prime Routine algorithm realization
 * preudocode on: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf */
 function ST_Random_Prime(length, input_seed, outlen) {
     length = BigInt(length);
