@@ -15,6 +15,7 @@ let SHA;
 let RSADigSig;
 let ElGamalDigSig;
 let FIPSDigSig;
+let GostHash;
 
 function createWindow() {
 	// Create the browser window.
@@ -204,6 +205,23 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
+	const createGostHash = () => {
+		GostHash = new BrowserWindow({
+			width: 1060,
+			height: 600,
+			title: 'GOST R 34.11.94',
+			webPreferences: {
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		});
+		GostHash.loadFile('./pages/GOST_R_34.11.94.html');
+		mainWindow.hide();
+		GostHash.on('close', function () {
+			GostHash = 'null';
+			mainWindow.show();
+		});
+	};
 
 
 	ipcMain.on('lab1Open', function () {
@@ -250,6 +268,10 @@ function createWindow() {
 	});
 	ipcMain.on('FIPSDigSigOpen', function () {
 		createFIPSDigSig();
+		mainWindow.hide();
+	});
+	ipcMain.on('GOSTOpen', function () {
+		createGostHash();
 		mainWindow.hide();
 	});
 

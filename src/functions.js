@@ -13,7 +13,7 @@ class cryptFunctions {
             p = BigInt(P); q = BigInt(Q);
         } else {
             let numbers = getPrimeNumbers(size);
-            console.log(numbers)
+            console.log(numbers);
             // Find g
             q = BigInt(numbers.q);
             p = BigInt(numbers.p);
@@ -234,7 +234,7 @@ function countFactorOf2Degree(num) {
 * uses an Extended Euclid's algorithm */
 function getInverseElem(a,m) {
     m = BigInt(m); a = BigInt(a);
-    a = (a % m + m) % m
+    a = (a % m + m) % m;
     if (!a || m < 2n) {
         return NaN // invalid input
     }
@@ -726,8 +726,7 @@ function Utf8Encode(string) {
         }
     }
     return utftext;
-}; // Строка в любой кодировке как UTF-8
-
+} // Строка в любой кодировке как UTF-8
 /**
  * Secure Hash Algorithm (SHA1)
  **/
@@ -746,7 +745,7 @@ function SHA1(msg) { let temp;
             str += v.toString(16);
         }
         return str;
-    };
+    }
     let blockstart;
     var i, j;
     const W = new Array(80);
@@ -918,7 +917,7 @@ function ST_Random_Prime(length, input_seed, outlen) {
     let prime_seed = input_seed;
     let prime_gen_counter = 0n;
 
-    if (length < 2n) return false
+    if (length < 2n) return false;
     if (length >= 33n){
         let ST_prime = ST_Random_Prime(ceil(length / 2n) + 1n, input_seed, outlen);
         let c0 = ST_prime.prime;
@@ -935,7 +934,7 @@ function ST_Random_Prime(length, input_seed, outlen) {
         prime_seed += iterations + 1n;
         x = (2n ** (length - 1n)) + (x % (2n ** (length - 1n)));
 
-        let t = ceil(x / (2n * c0))
+        let t = ceil(x / (2n * c0));
 
         if(2n * t * c0 + 1n > 2n ** length){
             t = ceil(2n ** (length - 1n) / (2n*c0))
@@ -948,7 +947,7 @@ function ST_Random_Prime(length, input_seed, outlen) {
             a += BigInt('0x' + crypto.createHash('SHA1').update((prime_seed + i).toString()).digest('hex')) * (2n ** (i*outlen))
         }
         prime_seed += iterations + 1n;
-        a = 2n + (a % (c - 3n))
+        a = 2n + (a % (c - 3n));
 
         let z = fastDegreeModule(a, 2n * t, c);
         if((NOD(z - 1n, c) === 1n) && fastDegreeModule(z, c0, c) === 1n){

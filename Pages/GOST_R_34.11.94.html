@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>MD5 Hash</title>
+	<title>GOST Hash</title>
 	<style>
 		#drop-area {
 			border: 2px dashed #ccc;
@@ -48,42 +48,42 @@
 </head>
 <body>
 <div>
-	<h1>MD5 Hash Algorithm</h1>
+	<h1>ГОСТ 34.11.94</h1>
 	<br><br>
 	<label id="">Введите данные для хеширования или перетащите файл</label>
 	<textarea cols="126" rows="5" id="message"></textarea>
 	<br>
-	<button onclick="encode()">Расчитать хеш</button>
+	<button onclick="hashIt()">Расчитать хеш</button>
 	<br><br>
 	<label>Результат</label>
 	<textarea cols="70" rows="1" id="hash"></textarea>
 	<br>
 </div>
 
-<script src="../src/functions.js"></script>
+<script src="../src/GOST.js"></script>
 <script>
 	const electron = require('electron');
 	const {ipcRenderer} = electron;
 
 	const fs = require('fs');
-	const message = document.getElementById('message');
-	const hash = document.getElementById('hash');
+	const messageId = document.getElementById('message');
+	const hashId = document.getElementById('hash');
 
 	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-		message.addEventListener(eventName, preventDefaults, false)
+		messageId.addEventListener(eventName, preventDefaults, false)
 	});
 	function preventDefaults (e) {
-		e.preventDefault()
+		e.preventDefault();
 		e.stopPropagation()
 	}
 
-	message.ondrop = (e) =>{
+	messageId.ondrop = (e) =>{
 		e.preventDefault();
+		const tmp = e.dataTransfer.files[0].path;
 		fs.readFile(e.dataTransfer.files[0].path, function (err, data) {
 			if (err) throw err;
-			document.getElementById("hash").value = crypto.createHash('md5').update(data).digest('hex').toString()
-			console.log(data);
-			//message.value = data.join(' '); // Вывод байт занимает слишком много времени
+			hashId.value = gosthashFile(data);
+			messageId.value = tmp; // Вывод байт занимает слишком много времени
 		});
 		return false;
 	};
@@ -93,8 +93,8 @@
 		inp.value = '';
 	}
 
-	function encode() {
-		document.getElementById("hash").value = MD5Encode(message.value)
+	function hashIt() {
+		hashId.value = gosthash(messageId.value)
 	}
 
 </script>
