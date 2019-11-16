@@ -24,6 +24,7 @@
     "eslint": "^6.6.0"
   },
   "dependencies": {
-    "big-integer": "^1.6.45"
+    "big-integer": "^1.6.45",
+    "pixi.js": "^5.2.0"
   }
 }

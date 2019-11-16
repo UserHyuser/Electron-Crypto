@@ -8,25 +8,25 @@
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="./materialize/css/materialize.min.css" media="screen,projection"/>
     <link rel="stylesheet" href="./animated-bg/style.css">
-    <script src="./animated-bg/particles.js"></script>
-    <script src="./animated-bg/app.js"></script>
+<!--    <script src="./animated-bg/particles.js"></script>-->
+<!--    <script src="./animated-bg/app.js"></script>-->
+
 </head>
 <body>
 <div id="particles-js">
-
 </div>
 
-<div class="container" style="position: relative">
+<div class="container" style="position: relative; overflow:hidden">
     <br>
-    <h4 class="header">Криптографические методы защиты информации</h4>
-    <div class="black-text">
+    <h4 class="header white-text">Криптографические методы защиты информации</h4>
+    <div class="white-text">
         <h6>Выберите нужную программу:</h6>
     </div>
     <br>
     <div style="text-align: center">
-        <button class="btn waves-effect waves-light" onclick="lab1Button()"style="width: 100%">Базовые алгоритмы теории чисел</button>
+        <button class="btn waves-effect waves-light" onclick="lab1Button()" style="width: 100%; ">Базовые алгоритмы теории чисел</button>
     </div>
-    <br><br>
+    <br>
     <button class="btn waves-effect waves-light" onclick="RSAButton()">RSA шифрование</button>
     <button class="btn waves-effect waves-light" onclick="labDiffiHellmanButton()" style="float: right">Алгоритм Диффи-Хеллмана</button>
 
@@ -89,6 +89,7 @@
         ipcRenderer.send('GOSTOpen');
     }
 </script>
-
+<script src="./animated-bg/pixi-min.js"></script>
+<script src="./animated-bg/pixi.js"></script>
 </body>
 </html>
