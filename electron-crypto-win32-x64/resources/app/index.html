@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>КМЗИ</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="./materialize/css/materialize.min.css" media="screen,projection"/>
+    <link rel="stylesheet" href="./animated-bg/style.css">
+<!--    <script src="./animated-bg/particles.js"></script>-->
+<!--    <script src="./animated-bg/app.js"></script>-->
+
+</head>
+<body>
+<div id="particles-js">
+</div>
+
+<div class="container" style="position: relative; overflow:hidden">
+    <br>
+    <h4 class="header white-text">Криптографические методы защиты информации</h4>
+    <div class="white-text">
+        <h6>Выберите нужную программу:</h6>
+    </div>
+    <br>
+    <div style="text-align: center">
+        <button class="btn waves-effect waves-light" onclick="lab1Button()" style="width: 100%; ">Базовые алгоритмы теории чисел</button>
+    </div>
+    <br>
+    <button class="btn waves-effect waves-light" onclick="RSAButton()">RSA шифрование</button>
+    <button class="btn waves-effect waves-light" onclick="labDiffiHellmanButton()" style="float: right">Алгоритм Диффи-Хеллмана</button>
+
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="labElGamalButton()">Шифр Эль-Гамаля</button>
+    <button class="btn waves-effect waves-light" onclick="labShamirButton()" style="float: right" >Шифр Шамира</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="SHAButton()">SHA Hash</button>
+    <button class="btn waves-effect waves-light" onclick="MD5Button()" style="float: right">MD5 Hash</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="RSADigSigButton()">ЭП на алгоритме RSA</button>
+    <button class="btn waves-effect waves-light" onclick="ElGamalDigSigButton()" style="float: right">ЭП на алгоритме Эль-Гамаля</button>
+    <br><br>
+    <button class="btn waves-effect waves-light" onclick="FIPSDigSigButton()">ЭП стандарт FIPS</button>
+    <button class="btn waves-effect waves-light" onclick="GOSTButton()" style="float: right" >ГОСТ хеш</button>
+    <br><br>
+
+</div>
+
+<!-- You can also require other files to run in this process -->
+<script src="./renderer.js"></script>
+<script type="text/javascript" src="./materialze/js/materialize.min.js"></script>
+<script>
+    const electron = require('electron');
+    const {ipcRenderer} = electron; // This can send text to main.js (some type socket.io)
+
+    function lab1Button() {
+        ipcRenderer.send('lab1Open');
+    }
+
+    function RSAButton() {
+        ipcRenderer.send('lab2Open');
+    }
+
+    function labDiffiHellmanButton() {
+        ipcRenderer.send('labDiffiHellmanOpen');
+    }
+    function labShamirButton() {
+        ipcRenderer.send('labShamirOpen');
+    }
+    function labElGamalButton() {
+        ipcRenderer.send('labElGamalOpen');
+    }
+    function MD5Button() {
+        ipcRenderer.send('MD5Open');
+    }
+    function SHAButton() {
+        ipcRenderer.send('SHAOpen');
+    }
+    function RSADigSigButton() {
+        ipcRenderer.send('RSADigSigOpen');
+    }
+    function ElGamalDigSigButton() {
+        ipcRenderer.send('ElGamalDigSigOpen');
+    }
+    function FIPSDigSigButton() {
+        ipcRenderer.send('FIPSDigSigOpen');
+    }
+    function GOSTButton() {
+        ipcRenderer.send('GOSTOpen');
+    }
+</script>
+<script src="./animated-bg/pixi-min.js"></script>
+<script src="./animated-bg/pixi.js"></script>
+</body>
+</html>

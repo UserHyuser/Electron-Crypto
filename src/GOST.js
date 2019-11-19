@@ -1,10 +1,5 @@
 /**
- * Javascript GOST R 34.11-94 hash function implementation.
  * Based on C-code by Alexei Kravchenko and Markku-Juhani Saarinen
- * and Utf8 class by Chris Veness.
- *
- * Usage: gosthash("<string>") returns a hash-string.
- * 						Alexander Okrugin (November, 11, 2011)
  */
 var Utf8 = {}; // Utf8 namespace
 Utf8.encode = function (strUni) {
@@ -127,7 +122,8 @@ function GOST_ENCRYPT_ROUND(key1, key2) {
 	r ^= gost_sbox[0][tmp & 0xff] ^ gost_sbox[1][(tmp >>> 8) & 0xff] ^ gost_sbox[2][(tmp >>> 16) & 0xff] ^ gost_sbox[3][(tmp >>> 24) & 0xff];
 }
 
-/* encrypt a block with the given key */
+/* encrypt a block with the given key
+* 16 rounds of encryption */
 
 function GOST_ENCRYPT(ii, key, varhash) {
 	r = varhash[ii], l = varhash[ii + 1];
@@ -405,7 +401,7 @@ function gosthash(v) {
 	return (rx.join(""));
 }
 
-/* Hashing Files */
+/* Hashing Files (byte Array) */
 function gosthashFile(v) {
 	var rx = new Array(8);
 	var x = v;

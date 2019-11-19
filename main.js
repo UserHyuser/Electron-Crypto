@@ -37,7 +37,7 @@ function createWindow() {
 				nodeIntegration: true
 			}
 		});
-		lab1Window.loadFile('Lab1.html');
+		lab1Window.loadFile('./pages/Lab1.html');
 		lab1Window.on('close', function () {
 			lab1Window = 'null';
 		})

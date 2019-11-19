@@ -1,5 +1,5 @@
 # Electron-Crypto
-Stack: Node.js, Electron
+Stack: Node.js, Electron, PIXI.js
 
 ## License
 
@@ -13,6 +13,7 @@ Stack: Node.js, Electron
 6. SHA-1 hash algorithm
 7. RSA digital signature algorithm
 8. ElGamal digital signature algorithm
+9. GOST R 34.11.94 Hash algorithm
 
 ## About program
 1. You can calculate hash and digital signature both to text and files (drag and drop file to form)

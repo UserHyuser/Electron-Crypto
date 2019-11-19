@@ -1,0 +1,31 @@
+{
+  "name": "electron-crypto",
+  "version": "1.0.0",
+  "description": "Realization of crypto protocols on Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "",
+  "keywords": [
+    "Electron",
+    "crypto",
+    "cryptography",
+    "Shamir",
+    "RSA",
+    "El Gamal",
+    "ElGamal",
+    "diffie hellman"
+  ],
+  "author": "Nikita",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^6.0.9",
+    "electron-packager": "^14.1.0",
+    "eslint": "^6.6.0"
+  },
+  "dependencies": {
+    "big-integer": "^1.6.45",
+    "pixi.js": "^5.2.0"
+  }
+}

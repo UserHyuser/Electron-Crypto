@@ -69,7 +69,7 @@
 		path: ''
 	}
 
-	// q - 160 бит p - 1024
+	// q - 160 бит p - 1024 для формата FIPS 186
 	let N = 160;
 	let L = 1024;
 
@@ -78,6 +78,7 @@
 		let keys = generateFIPS(N, L);
 
 		console.log(keys)
+		console.log(keys.q.toString(2).length, keys.p.toString(2).length)
 
 		let g = generatorForFIPS(keys.q, keys.p)
 		console.log(g)
@@ -121,9 +122,8 @@
 		let x = BigInt(inputX.value);
 
 		let hash;
-		let k = 0n;
 		let size = bigInt.randBetween(1, N/8);
-		k = BigInt('0x' + crypto.randomBytes(Number(size)).toString('hex'));
+		let k = BigInt('0x' + crypto.randomBytes(Number(size)).toString('hex'));
 
 		let kInv = getInverseElem(k, q);
 

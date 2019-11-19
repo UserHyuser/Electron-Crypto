@@ -835,16 +835,17 @@ function SHA1(msg) { let temp;
 }
 
 /* Digital signature standard FIPS 186
-* returns p: 1024 bits; q: 160 bits
-* p and q both are prime
+* returns p: 1024 bits; q: 160 bits on settings N = 160, L = 1024
+*         p: 1024 bits; q: 256 bits on setting N = 256, L = 1024
+* p and q both are prime. Other setting wasn't tested.
 * uses Shawe-Taylor Random_Prime algorithm
 * */
-function generateFIPS() {
+function generateFIPS(N, L) {
 
-    let L = 1024n;
-    let N = 160n;
+    L = BigInt(L);
+    N = BigInt(N);
     let firstseed = 0n;
-    let outlen = 160n; // Length of q (size of a hash block)
+    let outlen = N; // Length of q (size of a hash block)
 
     (function () { // Gen first seed
         let seedlen = N + 10n;
