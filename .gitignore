@@ -1,5 +1,4 @@
 node_modules
 materialize
 bulls and cows
-/bin/
-/electron-crypto-win32-x64/
+electron-crypto-win32-x64
