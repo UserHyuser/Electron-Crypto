@@ -227,6 +227,7 @@ function countFactorOf2Degree(num) {
     }
     tmp /= 2n;
     num = num - tmp;
+    // console.log(tmp, num)
     return tmp.toString() + " " + countFactorOf2Degree(num)
 }
 
@@ -836,14 +837,20 @@ function SHA1(msg) { let temp;
 
 /* Digital signature standard FIPS 186
 * returns p: 1024 bits; q: 160 bits on settings N = 160, L = 1024
-*         p: 1024 bits; q: 256 bits on setting N = 256, L = 1024
+*         p: 1024 bits; q: 256 bits on setting N = 256, L = 1024 if its GOST 34.10-94 algorithm
 * p and q both are prime. Other setting wasn't tested.
 * uses Shawe-Taylor Random_Prime algorithm
 * */
 function generateFIPS(N, L) {
-
     L = BigInt(L);
     N = BigInt(N);
+    let hashAlg;
+    if(N === 256n){
+        hashAlg = 'SHA256'
+    } else {
+        hashAlg = 'SHA1'
+    }
+
     let firstseed = 0n;
     let outlen = N; // Length of q (size of a hash block)
 
@@ -875,7 +882,7 @@ function generateFIPS(N, L) {
     let old_counter = pgen_counter;
     let x = 0n;
     for (let i = 0n; i < iteration; i++) {
-        x += BigInt('0x' + crypto.createHash('SHA1').update((pseed + i).toString()).digest('hex')) * 2n ** (i * outlen);
+        x += BigInt('0x' + crypto.createHash(hashAlg).update((pseed + i).toString()).digest('hex')) * 2n ** (i * outlen);
     }
 
     pseed += iteration + 1n;
@@ -892,7 +899,7 @@ function generateFIPS(N, L) {
         pgen_counter++;
         let a = 0n;
         for (let i = 0n; i < iteration; i++) {
-            a += BigInt('0x' + crypto.createHash('SHA1').update((pseed + i).toString()).digest('hex')) * 2n ** (i * outlen);
+            a += BigInt('0x' + crypto.createHash(hashAlg).update((pseed + i).toString()).digest('hex')) * 2n ** (i * outlen);
         }
 
         pseed += iteration + 1n;
@@ -912,6 +919,12 @@ function generateFIPS(N, L) {
 /* Shawe-Taylor Random_Prime Routine algorithm realization
 * preudocode on: https://csrc.nist.gov/csrc/media/publications/fips/186/3/archive/2009-06-25/documents/fips_186-3.pdf */
 function ST_Random_Prime(length, input_seed, outlen) {
+    let hashAlg;
+    if(outlen === 256n){
+        hashAlg = "SHA256"
+    } else{
+        hashAlg = "SHA1"
+    }
     length = BigInt(length);
     // console.log({length, input_seed})
     input_seed = BigInt(input_seed);
@@ -930,7 +943,7 @@ function ST_Random_Prime(length, input_seed, outlen) {
 
         let x = 0n;
         for (let i = 0n; i < iterations; i++) {
-            x +=  BigInt('0x' + crypto.createHash('SHA1').update((prime_seed + i).toString()).digest('hex')) * (2n ** (i * outlen))
+            x +=  BigInt('0x' + crypto.createHash(hashAlg).update((prime_seed + i).toString()).digest('hex')) * (2n ** (i * outlen))
         }
         prime_seed += iterations + 1n;
         x = (2n ** (length - 1n)) + (x % (2n ** (length - 1n)));
@@ -945,7 +958,7 @@ function ST_Random_Prime(length, input_seed, outlen) {
 
         let a = 0n;
         for (let i = 0n; i < iterations; i++) {
-            a += BigInt('0x' + crypto.createHash('SHA1').update((prime_seed + i).toString()).digest('hex')) * (2n ** (i*outlen))
+            a += BigInt('0x' + crypto.createHash(hashAlg).update((prime_seed + i).toString()).digest('hex')) * (2n ** (i*outlen))
         }
         prime_seed += iterations + 1n;
         a = 2n + (a % (c - 3n));
@@ -963,8 +976,8 @@ function ST_Random_Prime(length, input_seed, outlen) {
     let c = 4n;
     while(true){
 
-        c = BigInt(bigInt(crypto.createHash('SHA1').update(prime_seed.toString()).digest('hex'), 16)
-            .xor(bigInt(crypto.createHash('SHA1').update((prime_seed + 1n).toString()).digest('hex'), 16)).toString());
+        c = BigInt(bigInt(crypto.createHash(hashAlg).update(prime_seed.toString()).digest('hex'), 16)
+            .xor(bigInt(crypto.createHash(hashAlg).update((prime_seed + 1n).toString()).digest('hex'), 16)).toString());
         /*console.log(bigInt(crypto.createHash('SHA1').update(prime_seed.toString()).digest('hex'), 16)
             .xor(bigInt(crypto.createHash('SHA1').update((prime_seed + 1n).toString()).digest('hex'), 16)))*/
         // c = BigInt('0x' + crypto.createHash('SHA1').update(prime_seed.toString()).digest('hex'));

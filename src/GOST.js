@@ -413,3 +413,4 @@ function gosthashFile(v) {
 	return (rx.join(""));
 }
 
+

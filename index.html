@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./animated-bg/style.css">
 <!--    <script src="./animated-bg/particles.js"></script>-->
 <!--    <script src="./animated-bg/app.js"></script>-->
-    <style> .btn {background-color:#26a69a00}</style>
+    <style> .btn {background-color:#26a69a00;}</style>
 
 </head>
 <body>
@@ -24,10 +24,11 @@
         <h6>Выберите нужную программу:</h6>
     </div>
     <br>
-    <div style="text-align: center">
-        <button class="btn waves-effect waves-light" onclick="lab1Button()" style="width: 100%; ">Базовые алгоритмы теории чисел</button>
-    </div>
-    <br>
+
+	<button class="btn waves-effect waves-light" onclick="lab1Button()">Базовые алгоритмы теории чисел</button>
+	<button class="btn waves-effect waves-light" onclick="GOSTDigSigButton()" style="float: right">ЭП ГОСТ</button>
+	<br>
+	<br>
     <button class="btn waves-effect waves-light" onclick="RSAButton()">RSA шифрование</button>
     <button class="btn waves-effect waves-light" onclick="labDiffiHellmanButton()" style="float: right">Алгоритм Диффи-Хеллмана</button>
 
@@ -44,6 +45,7 @@
     <button class="btn waves-effect waves-light" onclick="FIPSDigSigButton()">ЭП стандарт FIPS</button>
     <button class="btn waves-effect waves-light" onclick="GOSTButton()" style="float: right" >ГОСТ хеш</button>
     <br><br>
+
 
 </div>
 
@@ -88,6 +90,9 @@
     }
     function GOSTButton() {
         ipcRenderer.send('GOSTOpen');
+    }
+    function GOSTDigSigButton() {
+	    ipcRenderer.send('GOSTDigSigOpen');
     }
 </script>
 <script src="./animated-bg/pixi-min.js"></script>

@@ -3,6 +3,7 @@ const {app, BrowserWindow, Menu, ipcMain} = require('electron');
 const path = require('path');
 const cryptFunc = require('./src/functions');
 
+
 let mainWindow;
 let lab1Window;
 let lab2Window;
@@ -15,8 +16,8 @@ let SHA;
 let RSADigSig;
 let ElGamalDigSig;
 let FIPSDigSig;
-let GostHash;
-
+let GOSTHash;
+let GOSTDigSig;
 function createWindow() {
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
@@ -205,8 +206,8 @@ function createWindow() {
 			mainWindow.show();
 		});
 	};
-	const createGostHash = () => {
-		GostHash = new BrowserWindow({
+	const createGOSTHash = () => {
+		GOSTHash = new BrowserWindow({
 			width: 1060,
 			height: 600,
 			title: 'GOST R 34.11.94',
@@ -215,10 +216,27 @@ function createWindow() {
 				nodeIntegrationInWorker: true
 			}
 		});
-		GostHash.loadFile('./pages/GOST_R_34.11.94.html');
+		GOSTHash.loadFile('./pages/GOST_R_34.11.94.html');
 		mainWindow.hide();
-		GostHash.on('close', function () {
-			GostHash = 'null';
+		GOSTHash.on('close', function () {
+			GOSTHash = 'null';
+			mainWindow.show();
+		});
+	};
+	const createGOSTDigSig = () => {
+		GOSTDigSig = new BrowserWindow({
+			width: 1060,
+			height: 600,
+			title: 'GOST R 34.11.94',
+			webPreferences: {
+				nodeIntegration: true,
+				nodeIntegrationInWorker: true
+			}
+		});
+		GOSTDigSig.loadFile('./pages/GOST_digital_signature.html');
+		mainWindow.hide();
+		GOSTDigSig.on('close', function () {
+			GOSTDigSig = 'null';
 			mainWindow.show();
 		});
 	};
@@ -271,7 +289,11 @@ function createWindow() {
 		mainWindow.hide();
 	});
 	ipcMain.on('GOSTOpen', function () {
-		createGostHash();
+		createGOSTHash();
+		mainWindow.hide();
+	});
+	ipcMain.on('GOSTDigSigOpen', function () {
+		createGOSTDigSig();
 		mainWindow.hide();
 	});
 
