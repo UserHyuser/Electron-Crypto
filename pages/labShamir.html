@@ -1,0 +1,84 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <title>Шифр Шамира</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700&amp;amp;subset=cyrillic" rel="stylesheet"></head><span id="warning-container"><i data-reactroot=""></i></span>
+<body>
+<h1>Шифр Шамира</h1>
+<div class="">
+    <label id="labelP">P:</label>
+    <input type="text" class="form-control" id="inputP" size="91">
+    <br>
+    <label id="labelSize"></label>
+    <input type="text" class="form-control" id="keysize" size="9" value="Размер ключа" onclick="clearInput('keysize')">
+    <button onclick="generate()">Сгенерировать</button>
+</div>
+<br>
+<div>
+    <label id="">Введите данные для шифрования</label>
+    <label id="labelN">Ca:</label>
+    <input type="text" class="form-control" id="inputCa" size="30">
+    <label id="labelN">Da:</label>
+    <input type="text" class="form-control" id="inputDa" size="30">
+    <br>
+    <label id="labelD">Cb:</label>
+    <input type="text" class="form-control" id="inputCb" size="29">
+    <label id="labelN">Db:</label>
+    <input type="text" class="form-control" id="inputDb" size="28">
+    <br> <br>
+    <textarea cols="70" rows="2" id="message"></textarea>
+    <br>
+    <button onclick="encode()">Зашифровать</button>
+    <br>
+    <br>
+    <textarea cols="70" rows="2" id="x1"></textarea>
+    <textarea cols="70" rows="2" id="x2"></textarea>
+    <br>
+    <textarea cols="70" rows="2" id="x3"></textarea>
+    <textarea cols="70" rows="2" id="x4"></textarea>
+</div>
+<br>
+
+<script src="../src/functions.js"></script>
+<script>
+    const electron = require('electron');
+    const {ipcRenderer} = electron;
+    //let worker = new Worker('functions.js');
+    //const cryptFunc = require('../functions');
+
+    let inputP = document.getElementById("inputP");
+    let inputCa = document.getElementById("inputCa");
+    let inputCb = document.getElementById("inputCb");
+    let inputDa = document.getElementById("inputDa");
+    let inputDb = document.getElementById("inputDb");
+    let keysize = document.getElementById("keysize");
+
+    function clearInput(id) {
+        let inp = document.getElementById(id);
+        inp.value = '';
+    }
+
+    function generate() {
+        let keys = ShamirGenerate(keysize.value)
+        inputP.value = keys.p;
+        inputCa.value = keys.Ca;
+        inputCb.value = keys.Cb;
+        inputDa.value = keys.Da;
+        inputDb.value = keys.Db;
+    }
+    function encode() {
+        let message = document.getElementById("message").value;
+        let x1 = document.getElementById("x1");
+        let x2 = document.getElementById("x2");
+        let x3 = document.getElementById("x3");
+        let x4 = document.getElementById("x4");
+        let crypt = ShamirEncode(message, inputP.value, inputCa.value, inputDa.value, inputCb.value, inputDb.value)
+
+        x1.value = crypt.x1;
+        x2.value = crypt.x2;
+        x3.value = crypt.x3;
+        x4.value = crypt.x4;
+
+    }
+
+</script>
+</body></html>

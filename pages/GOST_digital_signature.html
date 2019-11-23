@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Цифровая подпись стандарта ГОСТ Р 34.10-94</title>
+	<style>.flash_red { background-color: red; } .flash_green { background-color: limegreen; }</style>
+</head>
+<body>
+<h1>Цифровая подпись стандарта ГОСТ Р 34.10-94</h1>
+<div class="">
+	<label id="labelP">P:</label>
+	<textarea cols="103" rows="3" id="inputP"></textarea>
+	<br>
+	<label id="labelQ">Q:</label>
+	<input type="text" class="form-control" id="inputQ" size="50">
+	<br>
+	<button onclick="generate()">Сгенерировать</button>
+</div>
+<br>
+<div>
+	<label id="labelG">A:</label>
+	<input type="text" class="form-control" id="inputG" size="70">
+	<br>
+	<label id="labelX">X:</label>
+	<input type="text" class="form-control" id="inputX" size="70">
+	<br>
+	<label id="labelY">Y:</label>
+	<input type="text" class="form-control" id="inputY" size="70">
+	<br>
+	<label id="">Введите сообщение или перетащите файл</label>
+
+	<br>
+	<textarea cols="110" rows="5" id="messageId"></textarea>
+	<br>
+	<button onclick="encode()">Сгенерировать ЭП</button>
+</div>
+<br>
+<div>
+	<label >Введите данные для проверки ЭП </label>
+	<br>
+	<label id="labelR">R:</label>
+	<input type="text" class="form-control" id="inputR" size="100">
+	<br>
+	<label id="labelS">S:</label>
+	<input type="text" class="form-control" id="inputS" size="100">
+	<br>
+	<button onclick="trustifySignature()">Проверить цифровую подпись</button>
+</div>
+
+<script>
+	const electron = require('electron');
+	const {ipcRenderer} = electron;
+	const fs = require('fs');
+
+	function clearInput(id) {
+		document.getElementById(id).value = '';
+	}
+
+	const inputP = document.getElementById("inputP");
+	const inputQ = document.getElementById("inputQ");
+	const inputX = document.getElementById("inputX");
+	const inputG = document.getElementById("inputG");
+	const inputR = document.getElementById("inputR");
+	const inputS = document.getElementById("inputS");
+	const inputY = document.getElementById("inputY");
+
+	let flagFile = {
+		flag:false,
+		path: ''
+	}
+
+	// q - 256 бит p - 1024 для ГОСТ 34.10-94
+	let N = 256;
+	let L = 1024;
+
+	function generate() {
+
+		let keys = generateFIPS(N, L);
+
+		console.log(keys)
+		console.log(keys.q.toString(2).length, keys.p.toString(2).length)
+
+		let a = generatorForFIPS(keys.q, keys.p) // Is the same as g in FIPS
+		let size = bigInt.randBetween(1, N/8); // Size of q
+		let x = BigInt('0x' + crypto.randomBytes(Number(size)).toString('hex'));
+
+		let y = fastDegreeModule(a, x, keys.p);
+
+		inputP.value = keys.p;
+		inputQ.value = keys.q;
+		inputX.value = x;
+		inputY.value = y;
+		inputG.value = a;
+	}
+
+	let messageId = document.getElementById('messageId');
+
+	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+		messageId.addEventListener(eventName, preventDefaults, false)
+	});
+
+	function preventDefaults (e) {
+		e.preventDefault()
+		e.stopPropagation()
+	}
+
+	messageId.ondrop = (e) =>{
+		e.preventDefault();
+		flagFile.path = e.dataTransfer.files[0].path;
+		messageId.value = flagFile.path;
+		flagFile.flag = true;
+		return false;
+	};
+
+	/*Create a signature*/
+	async function encode() {
+		let p = BigInt(inputP.value);
+		let q = BigInt(inputQ.value);
+
+		let g = BigInt(inputG.value);
+		let x = BigInt(inputX.value);
+
+		let hash;
+		let size = bigInt.randBetween(1, N/8);
+		let k = BigInt('0x' + crypto.randomBytes(Number(size)).toString('hex'));
+
+		let r = fastDegreeModule(g, k, p) % q;
+		if(r === 0n){
+			console.log('try again');
+			return
+		}
+
+		const findHash = new Promise((resolve) => {
+			if (flagFile.flag) {
+				fs.readFile(messageId.value, function (err, data) {
+					if (err) throw err;
+					resolve(BigInt('0x' + gosthashFile(data)));
+				});
+			} else {
+				console.log(messageId.value)
+				resolve(BigInt('0x' + gosthash(messageId.value)));
+			}
+		});
+
+		hash = await findHash;
+		console.log(hash < q)
+
+		s = (k*hash + x*r) % q;
+		if(s === 0n){
+			console.log('try again');
+			return
+		}
+		console.table({hash, g, s, r, k, p});
+		inputR.value = r;
+		inputS.value = s;
+	}
+
+	async function trustifySignature() {
+		let checkedDigest;
+		let p = BigInt(inputP.value);
+		let g = BigInt(inputG.value);
+		let q = BigInt(inputQ.value);
+		let r = BigInt(inputR.value);
+		let y = BigInt(inputY.value);
+		let s = BigInt(inputS.value);
+
+		const findHash = new Promise((resolve) => {
+			if (flagFile.flag) {
+				fs.readFile(messageId.value, function (err, data) {
+					if (err) throw err;
+					resolve(BigInt('0x' + gosthashFile(data)));
+				});
+			} else {
+				resolve(BigInt('0x' + gosthash(messageId.value)));
+			}
+		});
+
+		if((r >= q) || (s >= q)){
+			messageId.value = 'signature is not correct';
+			return
+		}
+
+		let hash = await findHash;
+		let hashInv = getInverseElem(hash, q);
+		let u1 = (hashInv*s) % q;
+		let u2 = ((hashInv * (-r)) % q) + q; // Fix the negative value
+		console.log({u1,u2});
+
+		let v = ((fastDegreeModule(g,u1,p) * fastDegreeModule(y,u2,p)) % p) % q;
+		console.log({v,r,u1,u2,hashInv})
+		if (v === r) {
+			messageId.classList.add('flash_green');
+			setTimeout(function () {
+				messageId.classList.remove('flash_green');
+			}, 2000);
+		} else {
+			messageId.classList.add('flash_red');
+			setTimeout(function () {
+				messageId.classList.remove('flash_red');
+			}, 2000);
+		}
+		flagFile.flag = false;
+	}
+</script>
+<script src="../src/functions.js"></script>
+<script src="../src/GOST.js"></script>
+</body>
+</html>
