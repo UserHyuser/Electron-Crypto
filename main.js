@@ -3,7 +3,6 @@ const {app, BrowserWindow, Menu, ipcMain} = require('electron');
 const path = require('path');
 const cryptFunc = require('./src/functions');
 
-
 let mainWindow;
 let lab1Window;
 let lab2Window;
@@ -18,6 +17,7 @@ let ElGamalDigSig;
 let FIPSDigSig;
 let GOSTHash;
 let GOSTDigSig;
+
 function createWindow() {
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
